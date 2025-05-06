@@ -15,13 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store"; // Import SecureStore
-import { USER_ID } from "../../constants/constants";
-
-// --- Assume BASE_URL and USER_ID are defined elsewhere or define them here ---
-// Replace with your actual base URL
-const BASE_URL = 'YOUR_ACTUAL_BASE_API_URL';
-// Replace with the actual key you use to store the user ID
-const USER_ID_KEY = 'user_id'; // <--- Confirm this key
+import { AUTH_TOKEN_KEY, BASE_URL, USER_ID } from "../../constants/constants";
 
 const styles = StyleSheet.create({
   container: {
@@ -114,24 +108,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#495057",
     flex: 2,
-    textAlign: 'right',
+    textAlign: "right",
   },
   linkText: {
     fontSize: 15,
-    color: '#007bff',
-    textDecorationLine: 'underline',
+    color: "#007bff",
+    textDecorationLine: "underline",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-   errorText: {
+  errorText: {
     fontSize: 16,
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 20,
-   },
+  },
 });
 
 function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
@@ -147,6 +141,7 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
     website?: string;
   }
 
+  const [userId, setUserId] = useState("");
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -155,39 +150,45 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        // --- 1. Get User ID from SecureStore ---
-        const userId = await SecureStore.getItemAsync(USER_ID);
-        console.log("Fetched User ID:", userId); // Debugging log
-
-        if (!userId) {
-          // Handle case where user ID is not found in SecureStore
-          const idError = new Error("User ID not found in SecureStore.");
-          console.error(idError);
-          setError(idError);
-          Alert.alert("Error", "User not logged in or ID not found.");
-          setLoading(false);
-          return; // Stop execution if no user ID
-        }
-
-        // --- 2. Construct the API URL dynamically ---
-        const apiUrl = `${BASE_URL}user/${userId}`; // Construct URL using fetched ID
-
-        // --- 3. Fetch data from the dynamic URL ---
-        // Assuming GET method for fetching data. Confirm if your API requires a different method.
-        const response = await fetch(apiUrl, {
-             method: 'GET', 
-             headers: { "Content-Type": "application/json" },
+        const response = await fetch(`${BASE_URL}user/${userId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
         });
-
-        if (!response.status) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Unknown error'}`);
+        const data = await response.json();
+        if (response.ok && data?.data?.id) {
+          let name = data.data.firstName;
+          if (data.data.lastName) {
+            name += ` ${data.data.lastName}`;
+          }
+          let location = "";
+          if (data.data?.location && data.data?.location !== "null") {
+            location += data.data.location;
+          }
+          let phone = "";
+          if (
+            data.data?.phone &&
+            data.data?.phone !== "null" &&
+            data.data?.phone != "0"
+          ) {
+            phone += data.data.phone;
+          }
+          setUserData({
+            email: data.data.email,
+            phone: phone,
+            location: location,
+            name: name,
+            bio: data.data?.bio || "",
+            joinDate: data.data?.joinDate || "",
+            profileImage: data.data.profileUrl,
+            company: data.data?.company || "",
+            website: data.data?.website || "",
+          });
+        } else {
+          Alert.alert(
+            "Error",
+            data.message || "Login failed. Please try again."
+          );
         }
-
-        const data = await response?.json();
-        // --- Assuming the response data structure matches your expected 'userData' ---
-        setUserData(data); // Update state with fetched data
-
       } catch (err: any) {
         console.error("Failed to fetch profile data:", err);
         setError(err);
@@ -197,12 +198,24 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
       }
     };
 
+    checkAuthToken();
     fetchProfileData();
-
   }, []); // Empty dependency array to run once on mount
 
-   // Helper function to render detail rows
-   const renderDetailRow = (
+  const checkAuthToken = async () => {
+    const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+    if (authToken) {
+      const userId = await SecureStore.getItemAsync(USER_ID);
+      if (userId) {
+        setUserId(userId);
+      }
+    } else if (navigation) {
+      navigation.navigate("Login");
+    }
+  };
+
+  // Helper function to render detail rows
+  const renderDetailRow = (
     label: string,
     value: string | React.ReactNode,
     isLastRow: boolean = false
@@ -210,18 +223,18 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
     // Check if userData is loaded before rendering rows
     if (!userData && !loading) return null; // Don't render rows if data failed to load
 
-
-    const valueElement = typeof value === "string" ? (
-      <Text style={styles.detailValue}>{value}</Text>
-    ) : (
-      value // Value is already a React Node (like a <Text> or <TouchableOpacity>)
-    );
+    const valueElement =
+      typeof value === "string" ? (
+        <Text style={styles.detailValue}>{value}</Text>
+      ) : (
+        value // Value is already a React Node (like a <Text> or <TouchableOpacity>)
+      );
 
     return (
       <View
         style={[
           styles.detailRow,
-          isLastRow ? { borderBottomWidth: 0, paddingBottom: 0 } : {}
+          isLastRow ? { borderBottomWidth: 0, paddingBottom: 0 } : {},
         ]}
         key={label} // Added key prop
       >
@@ -231,30 +244,31 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
     );
   };
 
-   // Define handleLinkPress here
-   const handleLinkPress = (url: string) => {
-    Linking.openURL(url).catch(err => console.error('An error occurred', err));
-   };
-
+  // Define handleLinkPress here
+  const handleLinkPress = (url: string) => {
+    Linking.openURL(url).catch((err) =>
+      console.error("An error occurred", err)
+    );
+  };
 
   // --- Conditional Rendering ---
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007bff" />
-        <Text style={{ marginTop: 10, color: '#555' }}>Loading profile...</Text>
+        <Text style={{ marginTop: 10, color: "#555" }}>Loading profile...</Text>
       </SafeAreaView>
     );
   }
 
   if (error) {
-     return (
+    return (
       <SafeAreaView style={styles.loadingContainer}>
         <Text style={styles.errorText}>Failed to load profile.</Text>
-         {/* Optional: Display error message for debugging */}
-         {/* <Text style={{ color: '#888', textAlign: 'center', marginTop: 5, marginHorizontal: 20 }}>{error.message}</Text> */}
+        {/* Optional: Display error message for debugging */}
+        {/* <Text style={{ color: '#888', textAlign: 'center', marginTop: 5, marginHorizontal: 20 }}>{error.message}</Text> */}
       </SafeAreaView>
-     );
+    );
   }
 
   // If data is loaded, render the profile
@@ -271,47 +285,61 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
           <View style={styles.header}>
             <View style={styles.profileImageContainer}>
               <Image
-                source={{ uri: userData?.profileImage || 'https://via.placeholder.com/150/F0F4F8/6C757D?text=N/A' }} // Fallback image
+                source={{
+                  uri:
+                    userData?.profileImage ||
+                    "https://via.placeholder.com/150/F0F4F8/6C757D?text=N/A",
+                }} // Fallback image
                 style={styles.profileImage}
               />
             </View>
-            <Text style={styles.userName}>{userData?.name || 'N/A'}</Text>
-            <Text style={styles.userBio}>{userData?.bio || 'No bio provided.'}</Text>
-            <Text style={styles.joinDateText}>{userData?.joinDate || 'Join date N/A'}</Text>
+            <Text style={styles.userName}>{userData?.name || "N/A"}</Text>
+            <Text style={styles.userBio}>
+              {userData?.bio || "No bio provided."}
+            </Text>
+            <Text style={styles.joinDateText}>
+              {userData?.joinDate || "Join date N/A"}
+            </Text>
           </View>
         </View>
 
         {/* Contact Information Section - Use userData */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
-           {userData && ( // Check if data exists before rendering rows
-               <>
-                 {renderDetailRow("Email", userData.email || 'N/A')}
-                 {renderDetailRow("Phone", userData.phone || 'N/A')}
-                 {renderDetailRow("Location", userData.location || 'N/A', true)}
-               </>
-           )}
+          {userData && ( // Check if data exists before rendering rows
+            <>
+              {renderDetailRow("Email", userData.email || "N/A")}
+              {renderDetailRow("Phone", userData.phone || "N/A")}
+              {renderDetailRow("Location", userData.location || "N/A", true)}
+            </>
+          )}
         </View>
 
         {/* Professional Details Section - Use userData */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Professional Details</Text>
           {userData && ( // Check if data exists before rendering rows
-              <>
-                 {renderDetailRow("Company", userData.company || 'N/A')}
-                 {renderDetailRow(
-                   "Website",
-                   // Check if website exists before rendering link
-                   userData.website ? (
-                       <TouchableOpacity onPress={() => userData.website && handleLinkPress(userData.website)}>
-                           <Text style={styles.linkText}>{userData.website.replace('https://', '')}</Text>
-                       </TouchableOpacity>
-                   ) : (
-                       'N/A' // Display 'N/A' if website is not available
-                   ),
-                   true // Mark as last row
-                 )}
-             </>
+            <>
+              {renderDetailRow("Company", userData.company || "N/A")}
+              {renderDetailRow(
+                "Website",
+                // Check if website exists before rendering link
+                userData.website ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      userData.website && handleLinkPress(userData.website)
+                    }
+                  >
+                    <Text style={styles.linkText}>
+                      {userData.website.replace("https://", "")}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  "N/A" // Display 'N/A' if website is not available
+                ),
+                true // Mark as last row
+              )}
+            </>
           )}
         </View>
       </ScrollView>
