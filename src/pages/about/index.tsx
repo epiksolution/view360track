@@ -145,7 +145,7 @@ function AboutScreen({ navigation }: { navigation?: NavigationProp<any> }) {
                />
              </View>
              <Text style={styles.appTitle}>View360 GPS Tracker</Text>
-             <Text style={styles.tagline}>Track your world with precision.</Text>
+             <Text style={styles.tagline}>Track location.</Text>
            </View>
          </View>
 

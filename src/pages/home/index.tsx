@@ -9,6 +9,7 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  BackHandler,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
@@ -54,10 +55,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "600", // Semi-bold
-    marginBottom: 8,
-    color: "#212529", // Very dark grey for titles
+    fontSize: 18,
+    fontWeight: "bold", // Semi-bold
+    marginBottom: 8, 
   },
   locationText: {
     fontSize: 15,
@@ -173,6 +173,23 @@ function HomeScreen({
     checkAuthToken();
     checkPermissionsAndServices();
   }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+      // Disable back button functionality
+      if (navigation.getState().routes[navigation.getState().index].name === "Home") {
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]); // Add navigation as a dependency
 
   useFocusEffect(
     React.useCallback(() => {
