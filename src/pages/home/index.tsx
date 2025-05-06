@@ -435,7 +435,7 @@ function HomeScreen({
   };
 
   const profile = async () => {
-    navigation.navigate("About");
+    navigation.navigate("Profile");
   };
   const logout = async () => {
     await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
