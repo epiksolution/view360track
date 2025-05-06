@@ -453,12 +453,12 @@ function HomeScreen({
           <Text style={styles.title}>Current Location</Text>
           {location ? (
             <Text style={styles.locationText}>
-              Latitude:{" "}
+              <Text>Latitude:{" "}</Text>
               <Text style={styles.locationCoords}>
                 {location.latitude.toFixed(6)}
               </Text>
-              {"\n"}
-              Longitude:{" "}
+             <Text> {"\n"}
+             Longitude:{" "}</Text>
               <Text style={styles.locationCoords}>
                 {location.longitude.toFixed(6)}
               </Text>
@@ -531,7 +531,7 @@ function HomeScreen({
             </View>
           </View>
         </View>
-      </ScrollView>{" "}
+      </ScrollView> 
       {/* End of ScrollView */}
       {/* Fixed Bottom Tab Bar Container */}
       <View style={styles.bottomBar}>
