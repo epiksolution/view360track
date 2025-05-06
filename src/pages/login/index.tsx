@@ -5,24 +5,48 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
   Alert,
 } from "react-native";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 
-import { AUTH_TOKEN_KEY, BASE_URL, USER_ID, USER_NAME } from "../../constants/constants";
+import {
+  AUTH_TOKEN_KEY,
+  BASE_URL,
+  USER_ID,
+  USER_NAME,
+} from "../../constants/constants";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
   },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: -20,
+    backgroundColor: "#e7f0ff",
+    paddingTop: 100,
+    paddingBottom: 60,
+    width: "100%",
+  },
+  textContainer: {
+    paddingVertical: 60,
+    paddingHorizontal: 30,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: "#fff",
+    marginTop: -20, 
+    shadowRadius: 3.84,
+    flexGrow: 1,
+    elevation: 5,
+  },
+
   logo: {
-    width: 100,
+    width: 200,
     height: 100,
+    resizeMode: "contain",
     marginBottom: 20,
   },
   title: {
@@ -103,14 +127,14 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
 
       const data = await response.json();
       if (response.ok) {
-        let user_name = '';
-        let user_id = '';
+        let user_name = "";
+        let user_id = "";
         if (data?.data?.user?.firstname) {
           user_name = data.data.user.firstname;
           if (data?.data?.user?.lastname) {
             user_name += ` ${data.data.user.lastname}`;
           }
-        } 
+        }
         if (data?.data?.user?.id) {
           user_id = data.data.user.id;
         }
@@ -134,26 +158,37 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   return (
     <View style={styles.container}>
       {/* Add App Title */}
-      <Text style={styles.title}>App Title</Text>
-      {/* Username Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-      {/* Password Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      {/* Login Button */}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../../assets/logo.png")} // Replace with your logo path
+          style={styles.logo}
+        />
+      </View>
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>Log In</Text>
+        {/* Username Input */} 
+        <Text>Username</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
+        {/* Password Input */}
+
+        <Text>Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        {/* Login Button */}
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

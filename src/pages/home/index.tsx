@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Alert, Button } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  Button,
+  Image,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
@@ -10,6 +20,7 @@ import {
   USER_ID,
   USER_NAME,
 } from "../../constants/constants";
+import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
 
 const LOCATION_TASK_NAME = "background-location-task";
 
@@ -21,44 +32,138 @@ type LocationCoords = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#f4f7f6", // A very subtle, clean background
+  },
+  scrollViewContent: {
+    paddingVertical: 16, // Vertical padding
+    paddingHorizontal: 16, // Horizontal padding
+    paddingBottom: 80, // Adjust based on your bottomBar height + any extra space
+  },
+  section: {
+    backgroundColor: "#ffffff", // Crisp white for sections
+    borderRadius: 8, // Gentle rounding
+    borderWidth: 1,
+    borderColor: "#e9ecef", // A very light grey border
+    padding: 16,
+    marginBottom: 16, // Consistent space between sections
+    elevation: 0, // Remove Android shadow
+    shadowOpacity: 0, // Remove iOS shadow
+  },
+  plainSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 18,
-    marginBottom: 20,
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "600", // Semi-bold
+    marginBottom: 8,
+    color: "#212529", // Very dark grey for titles
   },
-  buttonGroup: {
-    marginTop: 20,
-    gap: 10,
+  locationText: {
+    fontSize: 15,
+    color: "#495057", // Standard text color
+    lineHeight: 22, // Improved readability with line height
+  },
+  locationCoords: {
+    fontWeight: "bold",
+    color: "#007bff", // Accent color (standard blue)
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: "#212529",
   },
   statusContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
-    width: "80%",
+    gap: 12,
+    marginBottom: 16,
   },
   statusColumn: {
-    alignItems: "center",
     flex: 1,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    borderWidth: 1, // Thin border
+    borderColor: "#e9ecef", // Light grey border
+    padding: 12, // Slightly less padding than main section
+    alignItems: "flex-start", // Left align content
+    justifyContent: "space-between",
+    elevation: 0, // Remove Android shadow
+    shadowOpacity: 0, // Remove iOS shadow
+  },
+  statusIcon: {
+    width: 36, // Slightly smaller icons for a refined look
+    height: 36,
+    marginBottom: 10, // Space below icon
+    resizeMode: "contain",
   },
   statusTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 15, // Slightly smaller title in column
+    fontWeight: "600",
+    marginBottom: 4,
+    color: "#343a40",
+    textAlign: "left",
   },
-  statusValue: {
-    fontSize: 16,
-    color: "green", // Change to red if inactive
+  statusDescription: {
+    fontSize: 12, // Smaller descriptive text
+    color: "#6c757d",
+    marginBottom: 12, // Space before button
+    textAlign: "left",
+    lineHeight: 18, // Line height for description
   },
+  roundedButtonWrapper: {
+    width: "100%",
+    marginTop: "auto", // Push button to bottom within the column
+    overflow: "hidden", // Clip content to the border radius
+    borderRadius: 8, // Apply border radius here
+    elevation: 0, // Remove Android shadow
+    shadowOpacity: 0, // Remove iOS shadow
+  },
+  // --- Styles for the bottom bar using vector icons ---
+  bottomBar: {
+    flexDirection: "row", // Arrange children horizontally
+    justifyContent: "space-around", // Distribute space evenly
+    alignItems: "center", // Vertically align items
+    height: 60, // Fixed height for the bottom bar
+    backgroundColor: "#ffffff", // White background
+    borderTopWidth: 1, // Add a subtle top border
+    borderColor: "#e9ecef", // Light grey border color
+    paddingHorizontal: 8, // Add some horizontal padding
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  bottomTab: {
+    // Style for each individual tab (TouchableOpacity wrapper)
+    flex: 1, // Make each tab take equal space
+    alignItems: "center", // Center icon/text horizontally
+    justifyContent: "center", // Center icon/text vertically
+    paddingVertical: 4, // Reduced padding slightly
+  }, 
+  tabLabel: {
+    // Style for the text labels
+    fontSize: 14, // Small font size for labels
+    color: "#6c757d", // Default text color (muted grey)
+    fontWeight: "500", // Medium font weight
+    marginTop: 4, // Space between icon and text
+  },
+  logoutTabLabel: {
+    // Specific style for the logout label color
+    color: "#dc3545", // Red color for logout text
+  },
+  // --- End of bottom bar styles ---
 });
 
-function HomeScreen({ navigation }: { navigation: NavigationProp<any> }) {
+function HomeScreen({
+  navigation,
+  setUserName,
+}: {
+  navigation: NavigationProp<any>;
+  setUserName: (name: string) => void;
+}) {
   const [location, setLocation] = useState<LocationCoords | null>(null);
   const [userId, setUserId] = useState("");
-  const [userName, setUserName] = useState("");
+  const [userName, setLocalUserName] = useState("");
   const [foregroundSub, setForegroundSub] =
     useState<Location.LocationSubscription | null>(null);
   const [foregroundStatus, setForegroundStatus] = useState("Inactive");
@@ -75,7 +180,7 @@ function HomeScreen({ navigation }: { navigation: NavigationProp<any> }) {
 
       return () => {
         setUserId("");
-        setUserName("");
+        setLocalUserName("");
       };
     }, [])
   );
@@ -230,6 +335,7 @@ function HomeScreen({ navigation }: { navigation: NavigationProp<any> }) {
       }
       const userName = await SecureStore.getItemAsync(USER_NAME);
       if (userName) {
+        setLocalUserName(userName);
         setUserName(userName);
       }
     } else {
@@ -295,8 +401,6 @@ function HomeScreen({ navigation }: { navigation: NavigationProp<any> }) {
             notificationTitle: "Tracking location",
             notificationBody: "App is tracking your location in background.",
           },
-          // deferredUpdatesInterval: 60000,
-          // deferredUpdatesDistance: 100,
         });
 
         const confirmed = await Location.hasStartedLocationUpdatesAsync(
@@ -326,51 +430,132 @@ function HomeScreen({ navigation }: { navigation: NavigationProp<any> }) {
     }
   };
 
+  const about = async () => {
+    navigation.navigate("About");
+  };
+
+  const profile = async () => {
+    navigation.navigate("About");
+  };
   const logout = async () => {
     await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
     navigation.navigate("Login");
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.statusContainer}>
-        <View style={styles.statusColumn}>
-          <Text style={styles.statusTitle}>Foreground Tracking</Text>
-          <Text style={styles.statusValue}>{foregroundStatus}</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        style={{ flex: 1 }}
+      >
+        {/* Current Location Section */}
+        <View style={styles.section}>
+          <Text style={styles.title}>Current Location</Text>
+          {location ? (
+            <Text style={styles.locationText}>
+              Latitude:{" "}
+              <Text style={styles.locationCoords}>
+                {location.latitude.toFixed(6)}
+              </Text>
+              {"\n"}
+              Longitude:{" "}
+              <Text style={styles.locationCoords}>
+                {location.longitude.toFixed(6)}
+              </Text>
+            </Text>
+          ) : (
+            <Text style={styles.locationText}>
+              No recent location data available. Start tracking to see data.
+            </Text>
+          )} 
         </View>
-        <View style={styles.statusColumn}>
-          <Text style={styles.statusTitle}>Background Tracking</Text>
-          <Text style={styles.statusValue}>{backgroundStatus}</Text>
+
+        {/* Tracking Management Section Title */}
+        <Text style={styles.sectionTitle}>Manage Tracking</Text>
+
+        {/* Tracking Status Columns */}
+        <View style={styles.statusContainer}>
+          {/* Foreground Tracking Column */}
+          <View style={styles.statusColumn}>
+            {/* Assuming this icon is still a local asset */}
+            <Image
+              style={styles.statusIcon}
+              source={require("../../../assets/tracking/forground.png")}
+            />
+            <Text style={styles.statusTitle}>Foreground</Text>
+            <Text style={styles.statusDescription}>
+              Active only when app is open and visible.
+            </Text>
+            <View style={styles.roundedButtonWrapper}>
+              {foregroundStatus === "Inactive" ? (
+                <Button
+                  title="Start"
+                  color="#28a745" // Green
+                  onPress={startForegroundTracking}
+                />
+              ) : (
+                <Button
+                  title="Stop"
+                  color="#6c757d" // Muted Grey
+                  onPress={stopForegroundTracking}
+                />
+              )}
+            </View>
+          </View>
+
+          {/* Background Tracking Column */}
+          <View style={styles.statusColumn}>
+            {/* Assuming this icon is still a local asset */}
+            <Image
+              style={styles.statusIcon}
+              source={require("../../../assets/tracking/background.png")}
+            />
+            <Text style={styles.statusTitle}>Background</Text>
+            <Text style={styles.statusDescription}>
+              Continues tracking even when the app is closed.
+            </Text>
+            <View style={styles.roundedButtonWrapper}>
+              {backgroundStatus === "Inactive" ? (
+                <Button
+                  title="Start"
+                  color="#28a745" // Green
+                  onPress={startBackgroundTracking}
+                />
+              ) : (
+                <Button
+                  title="Stop"
+                  color="#6c757d" // Muted Grey
+                  onPress={stopBackgroundTracking}
+                />
+              )}
+            </View>
+          </View>
         </View>
+      </ScrollView>{" "}
+      {/* End of ScrollView */}
+      {/* Fixed Bottom Tab Bar Container */}
+      <View style={styles.bottomBar}>
+        {/* About Tab */}
+        <TouchableOpacity style={styles.bottomTab} onPress={about}>
+        <Entypo name="list" size={18} />
+           
+          <Text style={styles.tabLabel}>About</Text>
+        </TouchableOpacity>
+
+        {/* Profile Tab */}
+        <TouchableOpacity style={styles.bottomTab} onPress={profile}>
+        <FontAwesome6 name="user" size={18} />
+          <Text style={styles.tabLabel}>Profile</Text>
+        </TouchableOpacity>
+
+        {/* Logout Tab */}
+        <TouchableOpacity style={styles.bottomTab} onPress={logout}>
+          {/* Apply red color specifically to the Logout label */}
+          <AntDesign name="logout" size={18} color="red" />
+          <Text style={[styles.tabLabel, styles.logoutTabLabel]}>Logout</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.title}>📍 Expo Background Location Tracker</Text>
-      {location && (
-        <Text>
-          Latitude: {location.latitude.toFixed(6)} | Longitude:{" "}
-          {location.longitude.toFixed(6)}
-        </Text>
-      )}
-      {/* Status Columns */}
-      <View style={styles.buttonGroup}>
-        <Button
-          title="Start Foreground Tracking"
-          onPress={startForegroundTracking}
-        />
-        <Button
-          title="Stop Foreground Tracking"
-          onPress={stopForegroundTracking}
-        />
-        <Button
-          title="Start Background Tracking"
-          onPress={startBackgroundTracking}
-        />
-        <Button
-          title="Stop Background Tracking"
-          onPress={stopBackgroundTracking}
-        />
-        <Button title="Logout" onPress={logout} />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
