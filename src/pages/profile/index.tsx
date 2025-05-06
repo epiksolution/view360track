@@ -1,4 +1,4 @@
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import {
   Image,
@@ -148,59 +148,14 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
 
   // Fetch data when the component mounts
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}user/${userId}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        if (response.ok && data?.data?.id) {
-          let name = data.data.firstName;
-          if (data.data.lastName) {
-            name += ` ${data.data.lastName}`;
-          }
-          let location = "";
-          if (data.data?.location && data.data?.location !== "null") {
-            location += data.data.location;
-          }
-          let phone = "";
-          if (
-            data.data?.phone &&
-            data.data?.phone !== "null" &&
-            data.data?.phone != "0"
-          ) {
-            phone += data.data.phone;
-          }
-          setUserData({
-            email: data.data.email,
-            phone: phone,
-            location: location,
-            name: name,
-            bio: data.data?.bio || "",
-            joinDate: data.data?.joinDate || "",
-            profileImage: data.data.profileUrl,
-            company: data.data?.company || "",
-            website: data.data?.website || "",
-          });
-        } else {
-          Alert.alert(
-            "Error",
-            data.message || "Login failed. Please try again."
-          );
-        }
-      } catch (err: any) {
-        console.error("Failed to fetch profile data:", err);
-        setError(err);
-        Alert.alert("Error", "Failed to load profile data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     checkAuthToken();
-    fetchProfileData();
   }, []); // Empty dependency array to run once on mount
+
+  useFocusEffect( 
+    React.useCallback(() => {
+      checkAuthToken();
+    }, [])
+  );
 
   const checkAuthToken = async () => {
     const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
@@ -208,9 +163,57 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
       const userId = await SecureStore.getItemAsync(USER_ID);
       if (userId) {
         setUserId(userId);
+        fetchProfileData();
       }
     } else if (navigation) {
       navigation.navigate("Login");
+    }
+  };
+
+  const fetchProfileData = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}user/${userId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (response.ok && data?.data?.id) {
+        let name = data.data.firstName;
+        if (data.data.lastName) {
+          name += ` ${data.data.lastName}`;
+        }
+        let location = "";
+        if (data.data?.location && data.data?.location !== "null") {
+          location += data.data.location;
+        }
+        let phone = "";
+        if (
+          data.data?.phone &&
+          data.data?.phone !== "null" &&
+          data.data?.phone != "0"
+        ) {
+          phone += data.data.phone;
+        }
+        setUserData({
+          email: data.data.email,
+          phone: phone,
+          location: location,
+          name: name,
+          bio: data.data?.bio || "",
+          joinDate: data.data?.joinDate || "",
+          profileImage: data.data.profileUrl,
+          company: data.data?.company || "",
+          website: data.data?.website || "",
+        });
+      } else {
+        Alert.alert("Error", data.message || "Login failed. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch profile data:", err);
+      setError(err);
+      Alert.alert("Error", "Failed to load profile data. Please try again.");
+    } finally {
+      setLoading(false); 
     }
   };
 
