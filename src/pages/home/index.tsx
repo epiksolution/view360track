@@ -514,7 +514,7 @@ function HomeScreen({
                 <Button
                   title="Start"
                   color="#0078b4" // Green
-                  onPress={startForegroundTracking}
+                  onPress={startBackgroundTracking}
                 />
               ) : (
                 <Button
