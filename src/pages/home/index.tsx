@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0, // Remove iOS shadow
     display: "flex",
     flexDirection: "row",
+    alignItems: "center",
   },
   plainSection: {
     paddingHorizontal: 16,  
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   statusDescription: {
-    fontSize: 13, // Smaller descriptive text
+    fontSize: 14, // Smaller descriptive text
     color: "#6c757d",
     marginBottom: 20, // Space before button
     textAlign: "left",
@@ -469,23 +470,20 @@ function HomeScreen({
         contentContainerStyle={styles.scrollViewContent}
         style={{ flex: 1 }}
       >
+
         {/* Current Location Section */}
+        <Text style={styles.title}>Current Location</Text>
         <View style={styles.section}>
           <FontAwesome6 name="location-crosshairs" size={24} color="#0078b4" />
           <View style={styles.plainSection}>
-            <Text style={styles.title}>Current Location</Text>
+            
             {location ? (
               <Text style={styles.locationText}>
-                <Text>Latitude: </Text>
-                <Text style={styles.locationCoords}>
-                  {location.latitude.toFixed(6)}
-                </Text>
+                <Text>Latitude:  {location?.latitude.toFixed(6)},  </Text>
+                 
                 <Text> 
-                  Longitude:{" "}
-                </Text>
-                <Text style={styles.locationCoords}>
-                  {location.longitude.toFixed(6)}
-                </Text>
+                  Longitude:  {location?.longitude.toFixed(6)}
+                </Text> 
               </Text>
             ) : (
               <Text style={styles.locationText}>
@@ -516,7 +514,7 @@ function HomeScreen({
                 <Button
                   title="Start"
                   color="#0078b4" // Green
-                  onPress={startBackgroundTracking}
+                  onPress={startForegroundTracking}
                 />
               ) : (
                 <Button
