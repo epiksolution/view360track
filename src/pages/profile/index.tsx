@@ -170,16 +170,16 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
       const userId = await SecureStore.getItemAsync(USER_ID);
       if (userId) {
         setUserId(userId);
-        fetchProfileData();
+        fetchProfileData(userId);
       }
     } else if (navigation) {
       navigation.navigate("Login");
     }
   };
 
-  const fetchProfileData = async () => {
+  const fetchProfileData = async (userid: string) => {
     try {
-      const response = await fetch(`${BASE_URL}user/${userId}`, {
+      const response = await fetch(`${BASE_URL}user/${userid}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -195,12 +195,12 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
           data.data?.phone !== "null" &&
           data.data?.phone != "0"
         ) {
-          phone += data.data.phone;
+          phone = data.data.phone;
         }
         setUserData({
           email: data.data?.email,
           username: data.data?.username,
-          phone: data.data?.phone,
+          phone: phone,
           address: data.data?.address,
           name: name,
           jobTitle: data.data?.jobTitle || "",
@@ -211,7 +211,7 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
           country: data.data?.country || "",
           zipCode: data.data?.zipCode || "",
           role: data.data?.role || "",
-        }); // Set user data
+        });
       } else {
         Alert.alert("Error", data.message || "Login failed. Please try again.");
       }
@@ -251,13 +251,6 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
         <Text style={styles.detailLabel}>{label}:</Text>
         {valueElement}
       </View>
-    );
-  };
-
-  // Define handleLinkPress here
-  const handleLinkPress = (url: string) => {
-    Linking.openURL(url).catch((err) =>
-      console.error("An error occurred", err)
     );
   };
 
