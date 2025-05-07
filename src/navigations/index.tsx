@@ -60,7 +60,7 @@ export default function NavigationRoute() {
           options={{
             headerShown: true,
             headerShadowVisible: false,
-            title: `About Us`, 
+            title: `About`, 
           }}
         />
          <Stack.Screen

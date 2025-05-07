@@ -42,26 +42,27 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: "#ffffff", // Crisp white for sections
-    borderRadius: 8, // Gentle rounding
+    borderRadius: 15, // Gentle rounding
     borderWidth: 1,
     borderColor: "#e9ecef", // A very light grey border
-    padding: 16,
+    padding: 20,
     marginBottom: 16, // Consistent space between sections
     elevation: 0, // Remove Android shadow
     shadowOpacity: 0, // Remove iOS shadow
+    display: "flex",
+    flexDirection: "row",
   },
   plainSection: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: 16,  
   },
   title: {
     fontSize: 18,
     fontWeight: "bold", // Semi-bold
-    marginBottom: 8, 
+    marginBottom: 8,
   },
   locationText: {
     fontSize: 15,
-    color: "#495057", // Standard text color
+    color: "#6c757d",
     lineHeight: 22, // Improved readability with line height
   },
   locationCoords: {
@@ -83,10 +84,10 @@ const styles = StyleSheet.create({
   statusColumn: {
     flex: 1,
     backgroundColor: "#ffffff",
-    borderRadius: 8,
+    borderRadius: 15,
     borderWidth: 1, // Thin border
     borderColor: "#e9ecef", // Light grey border
-    padding: 12, // Slightly less padding than main section
+    padding: 20, // Slightly less padding than main section
     alignItems: "flex-start", // Left align content
     justifyContent: "space-between",
     elevation: 0, // Remove Android shadow
@@ -95,20 +96,20 @@ const styles = StyleSheet.create({
   statusIcon: {
     width: 36, // Slightly smaller icons for a refined look
     height: 36,
-    marginBottom: 10, // Space below icon
+    marginBottom: 15, // Space below icon
     resizeMode: "contain",
   },
   statusTitle: {
-    fontSize: 15, // Slightly smaller title in column
+    fontSize: 18, // Slightly smaller title in column
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 6,
     color: "#343a40",
     textAlign: "left",
   },
   statusDescription: {
-    fontSize: 12, // Smaller descriptive text
+    fontSize: 13, // Smaller descriptive text
     color: "#6c757d",
-    marginBottom: 12, // Space before button
+    marginBottom: 20, // Space before button
     textAlign: "left",
     lineHeight: 18, // Line height for description
   },
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", // Arrange children horizontally
     justifyContent: "space-around", // Distribute space evenly
     alignItems: "center", // Vertically align items
-    height: 60, // Fixed height for the bottom bar
+    height: 80, // Fixed height for the bottom bar
     backgroundColor: "#ffffff", // White background
     borderTopWidth: 1, // Add a subtle top border
     borderColor: "#e9ecef", // Light grey border color
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center icon/text horizontally
     justifyContent: "center", // Center icon/text vertically
     paddingVertical: 4, // Reduced padding slightly
-  }, 
+  },
   tabLabel: {
     // Style for the text labels
     fontSize: 14, // Small font size for labels
@@ -177,7 +178,10 @@ function HomeScreen({
   useEffect(() => {
     const backAction = () => {
       // Disable back button functionality
-      if (navigation.getState().routes[navigation.getState().index].name === "Home") {
+      if (
+        navigation.getState().routes[navigation.getState().index].name ===
+        "Home"
+      ) {
         return true;
       }
       return false;
@@ -467,24 +471,28 @@ function HomeScreen({
       >
         {/* Current Location Section */}
         <View style={styles.section}>
-          <Text style={styles.title}>Current Location</Text>
-          {location ? (
-            <Text style={styles.locationText}>
-              <Text>Latitude:{" "}</Text>
-              <Text style={styles.locationCoords}>
-                {location.latitude.toFixed(6)}
+          <FontAwesome6 name="location-crosshairs" size={24} color="#0078b4" />
+          <View style={styles.plainSection}>
+            <Text style={styles.title}>Current Location</Text>
+            {location ? (
+              <Text style={styles.locationText}>
+                <Text>Latitude: </Text>
+                <Text style={styles.locationCoords}>
+                  {location.latitude.toFixed(6)}
+                </Text>
+                <Text> 
+                  Longitude:{" "}
+                </Text>
+                <Text style={styles.locationCoords}>
+                  {location.longitude.toFixed(6)}
+                </Text>
               </Text>
-             <Text> {"\n"}
-             Longitude:{" "}</Text>
-              <Text style={styles.locationCoords}>
-                {location.longitude.toFixed(6)}
+            ) : (
+              <Text style={styles.locationText}>
+                No recent location data available. Start tracking to see data.
               </Text>
-            </Text>
-          ) : (
-            <Text style={styles.locationText}>
-              No recent location data available. Start tracking to see data.
-            </Text>
-          )} 
+            )}
+          </View>
         </View>
 
         {/* Tracking Management Section Title */}
@@ -492,34 +500,6 @@ function HomeScreen({
 
         {/* Tracking Status Columns */}
         <View style={styles.statusContainer}>
-          {/* Foreground Tracking Column */}
-          <View style={styles.statusColumn}>
-            {/* Assuming this icon is still a local asset */}
-            <Image
-              style={styles.statusIcon}
-              source={require("../../../assets/tracking/forground.png")}
-            />
-            <Text style={styles.statusTitle}>Foreground</Text>
-            <Text style={styles.statusDescription}>
-              Active only when app is open and visible.
-            </Text>
-            <View style={styles.roundedButtonWrapper}>
-              {foregroundStatus === "Inactive" ? (
-                <Button
-                  title="Start"
-                  color="#28a745" // Green
-                  onPress={startForegroundTracking}
-                />
-              ) : (
-                <Button
-                  title="Stop"
-                  color="#6c757d" // Muted Grey
-                  onPress={stopForegroundTracking}
-                />
-              )}
-            </View>
-          </View>
-
           {/* Background Tracking Column */}
           <View style={styles.statusColumn}>
             {/* Assuming this icon is still a local asset */}
@@ -527,7 +507,7 @@ function HomeScreen({
               style={styles.statusIcon}
               source={require("../../../assets/tracking/background.png")}
             />
-            <Text style={styles.statusTitle}>Background</Text>
+            <Text style={styles.statusTitle}>Background Tracking</Text>
             <Text style={styles.statusDescription}>
               Continues tracking even when the app is closed.
             </Text>
@@ -535,7 +515,7 @@ function HomeScreen({
               {backgroundStatus === "Inactive" ? (
                 <Button
                   title="Start"
-                  color="#28a745" // Green
+                  color="#0078b4" // Green
                   onPress={startBackgroundTracking}
                 />
               ) : (
@@ -548,20 +528,20 @@ function HomeScreen({
             </View>
           </View>
         </View>
-      </ScrollView> 
+      </ScrollView>
       {/* End of ScrollView */}
       {/* Fixed Bottom Tab Bar Container */}
       <View style={styles.bottomBar}>
         {/* About Tab */}
         <TouchableOpacity style={styles.bottomTab} onPress={about}>
-        <Entypo name="list" size={18} />
-           
+          <Entypo name="list" size={18} />
+
           <Text style={styles.tabLabel}>About</Text>
         </TouchableOpacity>
 
         {/* Profile Tab */}
         <TouchableOpacity style={styles.bottomTab} onPress={profile}>
-        <FontAwesome6 name="user" size={18} />
+          <FontAwesome6 name="user" size={18} />
           <Text style={styles.tabLabel}>Profile</Text>
         </TouchableOpacity>
 

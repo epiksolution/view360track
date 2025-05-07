@@ -7,9 +7,13 @@ import {
   View,
   Image,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { NavigationProp, useFocusEffect } from "@react-navigation/native";
+import { NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   AUTH_TOKEN_KEY,
@@ -18,85 +22,14 @@ import {
   USER_NAME,
 } from "../../constants/constants";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: -20,
-    backgroundColor: "#e7f0ff",
-    paddingTop: 100,
-    paddingBottom: 60,
-    width: "100%",
-  },
-  textContainer: {
-    paddingVertical: 60,
-    paddingHorizontal: 30,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: "#fff",
-    marginTop: -20, 
-    shadowRadius: 3.84,
-    flexGrow: 1,
-    elevation: 5,
-  },
-
-  logo: {
-    width: 200,
-    height: 100,
-    resizeMode: "contain",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  button: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#007BFF",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
-
 function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
-  const [username, setUsername] = useState("admin@mailinator.com");
-  const [password, setPassword] = useState("aFF(p+m)4DA^");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     checkAuthToken();
   }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      checkAuthToken();
-
-      return () => {
-        setUsername("");
-        setPassword("");
-      };
-    }, [])
-  );
 
   const checkAuthToken = async () => {
     const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
@@ -120,29 +53,21 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
         body: JSON.stringify({
           Skip2FA: false,
           email: username,
-          password: password,
+          password,
           token: "",
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        let user_name = "";
-        let user_id = "";
-        if (data?.data?.user?.firstname) {
-          user_name = data.data.user.firstname;
-          if (data?.data?.user?.lastname) {
-            user_name += ` ${data.data.user.lastname}`;
-          }
-        }
-        if (data?.data?.user?.id) {
-          user_id = data.data.user.id;
-        }
+        const user = data?.data?.user || {};
+        const user_name = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        const user_id = user.id || "";
         const setCookieHeader = response.headers.get("Set-Cookie");
+
         if (setCookieHeader) {
           await SecureStore.setItemAsync(USER_ID, user_id);
           await SecureStore.setItemAsync(USER_NAME, user_name);
-          await SecureStore.setItemAsync(AUTH_TOKEN_KEY, setCookieHeader);
           await SecureStore.setItemAsync(AUTH_TOKEN_KEY, setCookieHeader);
           navigation.navigate("Home");
         }
@@ -154,43 +79,132 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
       Alert.alert("Error", "An error occurred. Please try again later.");
     }
   };
-
+  // colors={["#f0e2f3", "#e3f2fd"]}
+  // colors={["#F5FAFD", "#EBF5FB", "#E1F0F9"]}
+  // colors={["#e3f2fd", "#ffffff"]}
   return (
-    <View style={styles.container}>
-      {/* Add App Title */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../../assets/logo.png")} // Replace with your logo path
+    <LinearGradient colors={["#e3f2fd", "#f0e2f3"]} style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.inner}
+      >
+        <Image 
+          source={require("../../../assets/logo.png")}
           style={styles.logo}
         />
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>Log In</Text>
-        {/* Username Input */} 
-        <Text style={{marginBottom:5}}>Username</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-        {/* Password Input */}
+        <Text style={styles.title}>Sign In</Text>
+        <Text style={styles.subtitle}>Please enter the details below to continue.</Text>
 
-        <Text style={{marginBottom:5}}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {/* Login Button */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Your Email"
+            placeholderTextColor="#aaa"
+            value={username}
+            onChangeText={setUsername}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Your Password"
+              placeholderTextColor="#aaa"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={20}
+                color="#aaa"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
-      </View>
-    </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  inner: {
+    flex: 1,
+    padding: 30,
+    justifyContent: "center",
+  },
+  logo: {
+    width: 200,
+    height: 80,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 10,
+    color: "#222",
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#666",
+    marginBottom: 30,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    marginBottom: 5,
+    color: "#444",
+    fontWeight: "600",
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "#fff",
+    color: "#333",
+  },
+  passwordWrapper: {
+    position: "relative",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 15,
+    top: 15,
+  },
+  button: {
+    backgroundColor: "#0078b4",
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+});
 
 export default LoginScreen;
