@@ -167,7 +167,7 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
       <View style={styles.textContainer}>
         <Text style={styles.title}>Log In</Text>
         {/* Username Input */} 
-        <Text>Username</Text>
+        <Text style={{marginBottom:5}}>Username</Text>
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -176,7 +176,7 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
         />
         {/* Password Input */}
 
-        <Text>Password</Text>
+        <Text style={{marginBottom:5}}>Password</Text>
         <TextInput
           style={styles.input}
           placeholder="Password"
