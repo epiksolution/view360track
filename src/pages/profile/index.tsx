@@ -130,19 +130,26 @@ const styles = StyleSheet.create({
 
 function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
   interface UserData {
+    username?: string;
+    address?: string;
     email?: string;
     phone?: string;
     location?: string;
     name?: string;
-    bio?: string;
-    joinDate?: string;
+    jobTitle?: string;
+    role?: string;
+    createdOn?: string;
     profileImage?: string;
     company?: string;
     website?: string;
+    state?: string;
+    city?: string;
+    zipCode?: string;
+    country?: string;
   }
 
   const [userId, setUserId] = useState("");
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -151,7 +158,7 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
     checkAuthToken();
   }, []); // Empty dependency array to run once on mount
 
-  useFocusEffect( 
+  useFocusEffect(
     React.useCallback(() => {
       checkAuthToken();
     }, [])
@@ -177,15 +184,11 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
         headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
-      if (response.ok && data?.data?.id) {
-        let name = data.data.firstName;
-        if (data.data.lastName) {
+      if (response.status) {
+        let name = data.data?.firstName;
+        if (data.data?.lastName) {
           name += ` ${data.data.lastName}`;
-        }
-        let location = "";
-        if (data.data?.location && data.data?.location !== "null") {
-          location += data.data.location;
-        }
+        } 
         let phone = "";
         if (
           data.data?.phone &&
@@ -195,16 +198,20 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
           phone += data.data.phone;
         }
         setUserData({
-          email: data.data.email,
-          phone: phone,
-          location: location,
+          email: data.data?.email,
+          username: data.data?.username,
+          phone: data.data?.phone,
+          address: data.data?.address,
           name: name,
-          bio: data.data?.bio || "",
-          joinDate: data.data?.joinDate || "",
-          profileImage: data.data.profileUrl,
-          company: data.data?.company || "",
-          website: data.data?.website || "",
-        });
+          jobTitle: data.data?.jobTitle || "",
+          createdOn: data.data?.createdOn || "",
+          profileImage: data.data?.profileUrl, 
+          city: data.data?.city || "",
+          state: data.data?.state || "",
+          country: data.data?.country || "",
+          zipCode: data.data?.zipCode || "",
+          role: data.data?.role || "",
+        }); // Set user data
       } else {
         Alert.alert("Error", data.message || "Login failed. Please try again.");
       }
@@ -213,7 +220,7 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
       setError(err);
       Alert.alert("Error", "Failed to load profile data. Please try again.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -287,63 +294,61 @@ function ProfileScreen({ navigation }: { navigation?: NavigationProp<any> }) {
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <View style={styles.profileImageContainer}>
+              {userData?.profileImage ? (
               <Image
-                source={{
-                  uri:
-                    userData?.profileImage ||
-                    "https://via.placeholder.com/150/F0F4F8/6C757D?text=N/A",
-                }} // Fallback image
+                source={{ uri: userData.profileImage }}
                 style={styles.profileImage}
               />
+              ) : (
+              <View
+                style={[
+                styles.profileImageContainer,
+                { justifyContent: "center", alignItems: "center" },
+                ]}
+              >
+                <Text style={{ fontSize: 40, color: "#6C757D" }}>
+                {userData?.name?.charAt(0).toUpperCase() || "N"} 
+                </Text>
+              </View>
+              )}
             </View>
-            <Text style={styles.userName}>{userData?.name || "N/A"}</Text>
-            <Text style={styles.userBio}>
-              {userData?.bio || "No bio provided."}
-            </Text>
-            <Text style={styles.joinDateText}>
-              {userData?.joinDate || "Join date N/A"}
-            </Text>
+            <Text style={styles.userName}>{userData?.name || "NA"}</Text>
+            <Text style={styles.userBio}>{userData?.jobTitle || "-"}</Text>
+            {/* <Text style={styles.joinDateText}>
+              {userData?.createdOn || "Join date N/A"}
+            </Text> */}
           </View>
         </View>
 
         {/* Contact Information Section - Use userData */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
+          <Text style={styles.sectionTitle}>Personal Information</Text>
           {userData && ( // Check if data exists before rendering rows
             <>
+            {renderDetailRow("Username", userData.username || "N/A")}
               {renderDetailRow("Email", userData.email || "N/A")}
               {renderDetailRow("Phone", userData.phone || "N/A")}
-              {renderDetailRow("Location", userData.location || "N/A", true)}
+              {renderDetailRow("Address", userData.address || "N/A")}
+              {renderDetailRow("City", userData.city || "N/A")}
+              {renderDetailRow("State", userData.state || "N/A")}
+              {renderDetailRow("Country", userData.country || "N/A")}
+              {renderDetailRow("Zip Code", userData.zipCode || "N/A")}
+
             </>
           )}
         </View>
 
         {/* Professional Details Section - Use userData */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Professional Details</Text>
-          {userData && ( // Check if data exists before rendering rows
-            <>
-              {renderDetailRow("Company", userData.company || "N/A")}
-              {renderDetailRow(
-                "Website",
-                // Check if website exists before rendering link
-                userData.website ? (
-                  <TouchableOpacity
-                    onPress={() =>
-                      userData.website && handleLinkPress(userData.website)
-                    }
-                  >
-                    <Text style={styles.linkText}>
-                      {userData.website.replace("https://", "")}
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  "N/A" // Display 'N/A' if website is not available
-                ),
-                true // Mark as last row
-              )}
-            </>
-          )}
+          <Text style={styles.sectionTitle}>Company Details</Text>
+          <Text>
+            {userData && ( // Check if data exists before rendering rows
+              <>
+                {renderDetailRow("Job Title", userData.jobTitle || "N/A")}
+                {renderDetailRow("Role", userData.role || "N/A")}
+              </>
+            )}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
