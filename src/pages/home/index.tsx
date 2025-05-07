@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView as SafeBottomAreaView } from "react-native-safe-area-context";
+
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
@@ -54,7 +56,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   plainSection: {
-    paddingHorizontal: 16,  
+    paddingHorizontal: 16,
   },
   title: {
     fontSize: 18,
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 1, // Thin border
     borderColor: "#e9ecef", // Light grey border
-    padding: 20, // Slightly less padding than main section
+    padding: 15, // Slightly less padding than main section
     alignItems: "flex-start", // Left align content
     justifyContent: "space-between",
     elevation: 0, // Remove Android shadow
@@ -101,14 +103,14 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   statusTitle: {
-    fontSize: 18, // Slightly smaller title in column
+    fontSize: 16, // Slightly smaller title in column
     fontWeight: "600",
     marginBottom: 6,
     color: "#343a40",
     textAlign: "left",
   },
   statusDescription: {
-    fontSize: 14, // Smaller descriptive text
+    fontSize: 13, // Smaller descriptive text
     color: "#6c757d",
     marginBottom: 20, // Space before button
     textAlign: "left",
@@ -127,11 +129,12 @@ const styles = StyleSheet.create({
     flexDirection: "row", // Arrange children horizontally
     justifyContent: "space-around", // Distribute space evenly
     alignItems: "center", // Vertically align items
-    height: 80, // Fixed height for the bottom bar
+    // height: 80, // Fixed height for the bottom bar
     backgroundColor: "#ffffff", // White background
     borderTopWidth: 1, // Add a subtle top border
     borderColor: "#e9ecef", // Light grey border color
     paddingHorizontal: 8, // Add some horizontal padding
+    paddingVertical: 8, // Add some vertical padding
     elevation: 0,
     shadowOpacity: 0,
   },
@@ -470,9 +473,8 @@ function HomeScreen({
         contentContainerStyle={styles.scrollViewContent}
         style={{ flex: 1 }}
       >
-
         {/* Current Location Section */}
-        <Text style={styles.title}>Current Location</Text>
+        {/* <Text style={styles.title}>Current Location</Text>
         <View style={styles.section}>
           <FontAwesome6 name="location-crosshairs" size={24} color="#0078b4" />
           <View style={styles.plainSection}>
@@ -491,15 +493,68 @@ function HomeScreen({
               </Text>
             )}
           </View>
-        </View>
+        </View> */}
 
         {/* Tracking Management Section Title */}
-        <Text style={styles.sectionTitle}>Manage Tracking</Text>
+        <Text style={styles.sectionTitle}> Tracking status</Text>
 
         {/* Tracking Status Columns */}
         <View style={styles.statusContainer}>
           {/* Background Tracking Column */}
-          <View style={styles.statusColumn}>
+            <View
+            style={[
+              styles.statusColumn,
+              {
+                borderColor:
+                foregroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
+              },
+            ]}
+            >
+            <View style={{ position: "absolute", top: 10, right: 10 }}>
+              {foregroundStatus === "Active" ? (
+                <AntDesign name="checkcircle" size={24} color="green" />
+              ) : (
+                <AntDesign name="closecircle" size={24} color="red" />
+              )}
+            </View>
+            <Image
+              style={styles.statusIcon}
+              source={require("../../../assets/tracking/forground.png")}
+            />
+            <Text style={styles.statusTitle}>Foreground Tracking</Text>
+            <Text style={styles.statusDescription}>
+              Tracks location when the app is open.
+            </Text>
+            <View style={styles.roundedButtonWrapper}>
+              {foregroundStatus === "Inactive" ? (
+                <Button
+                  title="Start"
+                  color="#0078b4" // Green
+                  onPress={startForegroundTracking}
+                />
+              ) : (
+                <Button
+                  title="Stop"
+                  color="#6c757d" // Muted Grey
+                  onPress={stopForegroundTracking}
+                />
+              )}
+            </View>
+          </View>
+          <View  style={[
+              styles.statusColumn,
+              {
+                borderColor:
+                backgroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
+              },
+            ]}>
+            <View style={{ position: "absolute", top: 10, right: 10 }}>
+              {backgroundStatus === "Active" ? (
+                <AntDesign name="checkcircle" size={24} color="green" />
+              ) : (
+                <AntDesign name="closecircle" size={24} color="red" />
+              )}
+            </View>
             {/* Assuming this icon is still a local asset */}
             <Image
               style={styles.statusIcon}
@@ -529,11 +584,10 @@ function HomeScreen({
       </ScrollView>
       {/* End of ScrollView */}
       {/* Fixed Bottom Tab Bar Container */}
-      <View style={styles.bottomBar}>
+      <SafeBottomAreaView edges={["bottom"]} style={styles.bottomBar}>
         {/* About Tab */}
         <TouchableOpacity style={styles.bottomTab} onPress={about}>
           <Entypo name="list" size={18} />
-
           <Text style={styles.tabLabel}>About</Text>
         </TouchableOpacity>
 
@@ -545,11 +599,10 @@ function HomeScreen({
 
         {/* Logout Tab */}
         <TouchableOpacity style={styles.bottomTab} onPress={logout}>
-          {/* Apply red color specifically to the Logout label */}
           <AntDesign name="logout" size={18} color="red" />
           <Text style={[styles.tabLabel, styles.logoutTabLabel]}>Logout</Text>
         </TouchableOpacity>
-      </View>
+      </SafeBottomAreaView>
     </SafeAreaView>
   );
 }

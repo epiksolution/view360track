@@ -5,170 +5,42 @@ import {
   View,
   ScrollView,
   Image,
-  TouchableOpacity,
-  StatusBar,
+  SafeAreaView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as SecureStore from "expo-secure-store";
 import { LinearGradient } from "expo-linear-gradient";
+import * as SecureStore from "expo-secure-store";
 
-// Placeholder data for the job details
+// Placeholder data
 const jobData = {
-  companyLogo: require("../../../assets/logo-sm.png"), // Replace with your actual logo path
+  companyLogo: require("../../../assets/logo-sm.png"),
   companyName: "View360 GPS Tracking",
   location: "GPS Tracking",
-
   descriptions: [
     {
       feature: "Real-time GPS Tracking",
-      description: "Allows continuous monitoring of current location.",
+      description: "Monitor live device location.",
     },
     {
       feature: "Background Tracking",
-      description:
-        "Continues to record location data even when the app is not actively open.",
+      description: "Track location even when app is closed.",
     },
     {
       feature: "Location Data Recording",
-      description: "Stores historical position information.",
-    },
-    {
-      feature: "Utilizes Device GPS",
-      description:
-        "Leverages the device's built-in GPS for accurate positioning.",
+      description: "Save and view past locations.",
     },
     {
       feature: "Route Tracking",
-      description: "Records and displays the path taken.",
+      description: "Visualize movement paths.",
     },
     {
       feature: "Asset Monitoring",
-      description:
-        "Enables keeping track of the location of valuable items or vehicles.",
+      description: "Track assets like vehicles or equipment.",
     },
   ],
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff", // Light background color
-    paddingTop: 0, // Space for the status bar
-  },
-  contentContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 30, // Rounded top-left corner
-    borderTopRightRadius: 30, // Rounded top-right corner
-    paddingHorizontal: 20,
-  },
-  header: {
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50, // Make it circular
-    backgroundColor: "#ffffff", // White background for the logo container
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "flex-start", // Center the logo horizontally
-    marginTop: -50, // Overlap the content container
-    marginHorizontal: 20, // Center the logo horizontally
-  },
-  companyLogo: {
-    width: 80,
-    height: 80,
-    resizeMode: "contain",
-  },
-  companyName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 10, // Space after logo area
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  location: {
-    fontSize: 15,
-    color: "#666",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  companyDescription: {
-    fontSize: 15,
-    color: "#555",
-    textAlign: "center",
-  },
-  starIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    fontSize: 24,
-    color: "#ffc107", // Example star color
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    color: "#333",
-    marginBottom: 8,
-  },
-  sectionText: {
-    fontSize: 15,
-    color: "#555",
-    lineHeight: 22,
-  },
-  qualificationsList: {
-    marginTop: 5,
-  },
-  qualificationItem: {
-    fontSize: 15,
-    color: "#555",
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  applyButtonContainer: {
-    padding: 20,
-    backgroundColor: "#ffffff", // White background behind the button
-    borderTopWidth: 1,
-    borderColor: "#eee", // Subtle line above the button
-  },
-  applyButton: {
-    backgroundColor: "#6a11cb", // Purple color from the image
-    paddingVertical: 15,
-    borderRadius: 8, // Rounded button corners
-    alignItems: "center",
-  },
-  applyButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#ffffff", // White text
-  },
-  footer: {
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-  },
-  versionText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  versionDetails: {
-    fontSize: 12,
-    color: "#555",
-    marginTop: 5,
-    textAlign: "center",
-  },
-});
-
 function AboutScreen() {
-  const [appVersion, setAppVersion] = useState<string>("");
+  const [appVersion, setAppVersion] = useState("1.0.0");
 
   useEffect(() => {
     const fetchAppVersion = async () => {
@@ -184,49 +56,165 @@ function AboutScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={["#e3f2fd", "#fcfcfc"]}
-        style={{ position: "relative" }}
-      >
-        <View style={{ height: 100 }}></View>
-      </LinearGradient>
-      <View style={styles.logoContainer}>
-        <Image source={jobData.companyLogo} style={styles.companyLogo} />
-      </View>
-      <View style={styles.contentContainer}>
-        {/* Header Content */}
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <LinearGradient
+          colors={["#e3f2fd", "#fcfcfc"]}
+          style={styles.headerGradient}
+        />
+        <View style={styles.logoContainer}>
+          <Image source={jobData.companyLogo} style={styles.companyLogo} />
+        </View>
+
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.companyName}>{jobData.companyName}</Text>
           <Text style={styles.location}>{jobData.location}</Text>
         </View>
 
-        {/* Scrollable Job Details */}
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.contentContainer}>
+          {/* Features */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Features</Text>
             <View style={styles.qualificationsList}>
               {jobData.descriptions.map((desc, index) => (
-                <Text key={index} style={styles.qualificationItem}>
-                  <Text style={{ fontWeight: 600 }}>- {desc.feature}</Text> - {" "}
-                   {desc.description}
-                </Text>
+                <View key={index} style={styles.qualificationItem}>
+                  <Text>- </Text>
+                  <Text>
+                    <Text style={{ fontWeight: "600" }}>{desc.feature}</Text> -{" "}
+                    {desc.description}
+                  </Text>
+                </View>
               ))}
             </View>
           </View>
-        </ScrollView>
-      </View>
 
-      {/* Footer with version info */}
-      <View style={styles.footer}>
-        <Text style={styles.versionText}>Version: {appVersion}</Text>
-        <Text style={styles.versionDetails}>
-          You're using version {appVersion}, which includes new features and
-          improvements. Stay updated for the best experience!
-        </Text>
-      </View>
-    </View>
+          {/* App Version Section */}
+          <View style={styles.footerCard}>
+            <View style={styles.versionHeader}>
+              <Text style={styles.versionLabel}>App Version</Text>
+              <Text style={styles.versionNumber}>v{appVersion}</Text>
+            </View>
+            <Text style={styles.versionDescription}>
+            You're using version 1.0.0, which includes new features and improvements. Stay updated for the best experience!
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollContainer: {
+    paddingBottom: 30,
+  },
+  headerGradient: {
+    height: 120,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -50,
+    alignSelf: "flex-start",
+    marginHorizontal: 20,
+  },
+  companyLogo: {
+    width: 80,
+    height: 80,
+    resizeMode: "contain",
+  },
+  header: {
+    alignItems: "flex-start",
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  companyName: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 10,
+  },
+  location: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 8,
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    color: "#333",
+    marginBottom: 10,
+  },
+  qualificationsList: {
+    marginTop: 5,
+    paddingLeft: 5,
+  },
+  qualificationItem: {
+    fontSize: 15,
+    color: "#555",
+    lineHeight: 22,
+    marginBottom: 8,
+    display: "flex",
+    flexDirection: "row",
+    gap: 5,
+  },
+  footerCard: {
+    // backgroundColor: "#fff", // Keeping it simple with white
+    backgroundColor: "#f9f9f9", // Light background for the header
+    borderRadius: 12, // Rounded corners for a modern touch
+    paddingVertical: 15, // Comfortable vertical padding
+    paddingHorizontal: 20, // Consistent horizontal padding 
+    marginTop: 20, // Space above the footer card
+  },
+  versionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1, // Bottom border for separation
+    borderColor: "#e0e0e0", // Light gray for the border
+    paddingBottom: 10, // Padding to separate header from content
+  },
+  versionLabel: {
+    fontSize: 16, // Clear and readable font size
+    fontWeight: "500", // Medium weight for the label
+    color: "#333", // Dark gray color for the label
+  },
+  versionNumber: {
+    fontSize: 16, // Same font size as label for consistency
+    fontWeight: "600", // Slightly bolder font weight to emphasize the version number
+    color: "#007bff", // Blue color for emphasis
+    paddingVertical: 5, // Slight padding to make it more tactile
+    paddingHorizontal: 15, // Balanced padding to make the version number stand out
+    backgroundColor: "#e3f2fd", // Light blue background for the version number
+    borderRadius: 20, // Rounded pill shape
+  },
+  versionDescription: {
+    fontSize: 14, // Smaller size for the description text
+    color: "#555", // Medium gray to keep it readable yet subtle
+    lineHeight: 20, // Proper line height for readability
+    textAlign: "center", // Center aligned for symmetry
+    marginTop: 10, // Space above the description text
+  },
+});
 
 export default AboutScreen;
