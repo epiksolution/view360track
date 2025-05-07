@@ -228,16 +228,6 @@ function HomeScreen({
         longitude: location.coords.longitude,
       };
 
-      const userId = await SecureStore.getItemAsync(USER_ID);
-      if (userId) {
-        setUserId(userId);
-      }
-      const userName = await SecureStore.getItemAsync(USER_NAME);
-      if (userName) {
-        setLocalUserName(userName);
-        setUserName(userName);
-      }
-
       console.log("📍 Received background location:", coords);
 
       saveLocationData({
@@ -253,8 +243,8 @@ function HomeScreen({
   });
 
   const saveLocationData = async (dataSet: {
-    user_id: string | null;
-    user_name: string | null;
+    user_id: string;
+    user_name: string;
     lat: number;
     lng: number;
     createdOn: string;
@@ -360,7 +350,17 @@ function HomeScreen({
 
   const checkAuthToken = async () => {
     const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-    if (!authToken) {
+    if (authToken) {
+      const userId = await SecureStore.getItemAsync(USER_ID);
+      if (userId) {
+        setUserId(userId);
+      }
+      const userName = await SecureStore.getItemAsync(USER_NAME);
+      if (userName) {
+        setLocalUserName(userName);
+        setUserName(userName);
+      }
+    } else {
       navigation.navigate("Login");
     }
   };
