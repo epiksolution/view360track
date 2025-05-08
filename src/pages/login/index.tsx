@@ -21,6 +21,8 @@ import {
   USER_ID,
   USER_NAME,
 } from "../../constants/constants";
+import { fetchPostCall} from "../../utils/APICalls";
+
 
 function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   const [username, setUsername] = useState("");
@@ -45,6 +47,13 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
     }
 
     try {
+      // const response = await fetchPostCall("auth/login", {
+      //   Skip2FA: false,
+      //   email: username,
+      //   password,
+      //   token: "",
+      // });
+      // console.log("Login Response:", response);
       const response = await fetch(`${BASE_URL}auth/login`, {
         method: "POST",
         headers: {
