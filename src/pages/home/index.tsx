@@ -304,11 +304,13 @@ function HomeScreen({
       Alert.alert("Permissions Error", "Location permissions are not granted.");
     }
 
-    if (fg.status === "granted" && bg.status === "granted" && enabled) {
-      console.log("✅ Permissions granted");
+    if (fg.status === "granted" && enabled) {
+      console.log("✅ Foreground permissions granted");
+      startForegroundTracking();
+    }
+    if (bg.status === "granted" && enabled) {
+      console.log("✅ Background Permissions granted");
       startBackgroundTracking();
-    } else {
-      console.log("❌ Permissions not granted");
     }
   };
 
