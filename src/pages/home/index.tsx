@@ -14,7 +14,7 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView as SafeBottomAreaView } from "react-native-safe-area-context";
-
+import * as Device from 'expo-device';
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
@@ -349,6 +349,13 @@ function HomeScreen({
     if (fg.status !== "granted" || bg.status !== "granted") {
       Alert.alert("Permissions Error", "Location permissions are not granted.");
     }
+
+    if (fg.status === "granted" && bg.status === "granted" && enabled) {
+      console.log("✅ Permissions granted");
+      startBackgroundTracking();
+    } else {
+      console.log("❌ Permissions not granted");
+    }
   };
 
   const checkAuthToken = async () => {
@@ -526,17 +533,11 @@ function HomeScreen({
               Tracks location when the app is open.
             </Text>
             <View style={styles.roundedButtonWrapper}>
-              {foregroundStatus === "Inactive" ? (
+              {foregroundStatus === "Inactive" && (
                 <Button
                   title="Start"
                   color="#0078b4" // Green
                   onPress={startForegroundTracking}
-                />
-              ) : (
-                <Button
-                  title="Stop"
-                  color="#6c757d" // Muted Grey
-                  onPress={stopForegroundTracking}
                 />
               )}
             </View>
@@ -565,17 +566,11 @@ function HomeScreen({
               Continues tracking even when the app is closed.
             </Text>
             <View style={styles.roundedButtonWrapper}>
-              {backgroundStatus === "Inactive" ? (
+              {backgroundStatus === "Inactive" && (
                 <Button
                   title="Start"
                   color="#0078b4" // Green
                   onPress={startBackgroundTracking}
-                />
-              ) : (
-                <Button
-                  title="Stop"
-                  color="#6c757d" // Muted Grey
-                  onPress={stopBackgroundTracking}
                 />
               )}
             </View>
