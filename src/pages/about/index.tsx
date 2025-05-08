@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as SecureStore from "expo-secure-store";
+import { Entypo } from "@expo/vector-icons";
 
 // Placeholder data
 const jobData = {
@@ -79,8 +80,10 @@ function AboutScreen() {
             <View style={styles.qualificationsList}>
               {jobData.descriptions.map((desc, index) => (
                 <View key={index} style={styles.qualificationItem}>
-                  <Text>- </Text>
-                  <Text>
+                  <Text style={{ marginRight: 2 }}>
+                    <Entypo name="dot-single" size={20} color="black" />{" "}
+                  </Text>
+                  <Text style={{ flex: 1, flexWrap: "wrap", paddingRight: 10 }}>
                     <Text style={{ fontWeight: "600" }}>{desc.feature}</Text> -{" "}
                     {desc.description}
                   </Text>
@@ -90,9 +93,9 @@ function AboutScreen() {
           </View>
 
           {/* App Version Section */}
-          <View style={styles.footerCard}> 
-              <Text style={styles.versionLabel}>App Version</Text>
-              <Text style={styles.versionNumber}>v{appVersion}</Text>
+          <View style={styles.footerCard}>
+            <Text style={styles.versionLabel}>Application version</Text>
+            <Text style={styles.versionNumber}>Version: {appVersion}</Text>
           </View>
         </View>
       </ScrollView>
@@ -154,15 +157,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textTransform: "uppercase",
+    fontSize: 16,
+    fontWeight: "600",
+    // textTransform: "uppercase",
     color: "#333",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   qualificationsList: {
-    marginTop: 5,
-    paddingLeft: 5,
+    marginTop: 5, 
   },
   qualificationItem: {
     fontSize: 15,
@@ -171,28 +173,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     display: "flex",
     flexDirection: "row",
-    gap: 5,
   },
-  footerCard: { 
+  footerCard: {
     // backgroundColor: "#f9f9f9", // Light background for the footer card
-    borderRadius: 15, // Rounded corners for a modern touch
-    paddingVertical: 15, // Comfortable vertical padding
-    paddingHorizontal: 20, // Consistent horizontal padding 
-    marginTop: 20, // Space above the footer card
-    borderWidth: 1, // Border for definition
-    borderColor: "#eee", // Light gray border color  
-  }, 
+    // borderRadius: 15, // Rounded corners for a modern touch
+    // paddingVertical: 15, // Comfortable vertical padding
+    // paddingHorizontal: 20, // Consistent horizontal padding
+    marginTop: 5, // Space above the footer card
+    // borderWidth: 1, // Border for definition
+    // borderColor: "#eee", // Light gray border color
+  },
   versionLabel: {
     fontSize: 16, // Clear and readable font size
-    fontWeight: "500", // Medium weight for the label
+    fontWeight: "600", // Medium weight for the label
     color: "#333", // Dark gray color for the label
-  }, 
+  },
   versionNumber: {
-    fontSize: 16, // Slightly larger font size for the version number
-    fontWeight: "700", // Bold weight for emphasis 
+    fontSize: 16,
     marginTop: 6, // Space between label and version number
   },
-  
 });
 
 export default AboutScreen;
