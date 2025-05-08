@@ -90,14 +90,9 @@ function AboutScreen() {
           </View>
 
           {/* App Version Section */}
-          <View style={styles.footerCard}>
-            <View style={styles.versionHeader}>
+          <View style={styles.footerCard}> 
               <Text style={styles.versionLabel}>App Version</Text>
               <Text style={styles.versionNumber}>v{appVersion}</Text>
-            </View>
-            <Text style={styles.versionDescription}>
-            You're using version 1.0.0, which includes new features and improvements. Stay updated for the best experience!
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -178,43 +173,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
   },
-  footerCard: {
-    // backgroundColor: "#fff", // Keeping it simple with white
-    backgroundColor: "#f9f9f9", // Light background for the header
-    borderRadius: 12, // Rounded corners for a modern touch
+  footerCard: { 
+    // backgroundColor: "#f9f9f9", // Light background for the footer card
+    borderRadius: 15, // Rounded corners for a modern touch
     paddingVertical: 15, // Comfortable vertical padding
     paddingHorizontal: 20, // Consistent horizontal padding 
     marginTop: 20, // Space above the footer card
-  },
-  versionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 1, // Bottom border for separation
-    borderColor: "#e0e0e0", // Light gray for the border
-    paddingBottom: 10, // Padding to separate header from content
-  },
+    borderWidth: 1, // Border for definition
+    borderColor: "#eee", // Light gray border color  
+  }, 
   versionLabel: {
     fontSize: 16, // Clear and readable font size
     fontWeight: "500", // Medium weight for the label
     color: "#333", // Dark gray color for the label
-  },
+  }, 
   versionNumber: {
-    fontSize: 16, // Same font size as label for consistency
-    fontWeight: "600", // Slightly bolder font weight to emphasize the version number
-    color: "#007bff", // Blue color for emphasis
-    paddingVertical: 5, // Slight padding to make it more tactile
-    paddingHorizontal: 15, // Balanced padding to make the version number stand out
-    backgroundColor: "#e3f2fd", // Light blue background for the version number
-    borderRadius: 20, // Rounded pill shape
+    fontSize: 16, // Slightly larger font size for the version number
+    fontWeight: "700", // Bold weight for emphasis 
+    marginTop: 6, // Space between label and version number
   },
-  versionDescription: {
-    fontSize: 14, // Smaller size for the description text
-    color: "#555", // Medium gray to keep it readable yet subtle
-    lineHeight: 20, // Proper line height for readability
-    textAlign: "center", // Center aligned for symmetry
-    marginTop: 10, // Space above the description text
-  },
+  
 });
 
 export default AboutScreen;
