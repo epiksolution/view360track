@@ -274,19 +274,23 @@ function HomeScreen({
 
       console.log("📍 Received background location:", coords);
 
-      saveLocationData({
-        user_id: userId,
-        user_name: userName,
-        lat: coords.latitude,
-        lng: coords.longitude,
-        createdOn: createdOn,
-      });
+      if (userId && userName) {
+        saveLocationData({
+          tracking_type: "background",
+          user_id: userId,
+          user_name: userName,
+          lat: coords.latitude,
+          lng: coords.longitude,
+          createdOn: createdOn,
+        });
+      }
     } else {
       console.warn("⚠️ No location data received in background task");
     }
   });
 
   const saveLocationData = async (dataSet: {
+    tracking_type: string;
     user_id: string;
     user_name: string;
     lat: number;
@@ -299,68 +303,18 @@ function HomeScreen({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tableName: "location_history",
-          fieldTypes: [
-            {
-              Field: "id",
-              Type: "int",
-              Null: "NO",
-              Key: "PRI",
-              Default: null,
-              Extra: "auto_increment",
-              value: null,
-            },
-            {
-              Field: "user_id",
-              Type: "varchar(255)",
-              Null: "YES",
-              Key: "",
-              Default: null,
-              Extra: "",
-              value: "2",
-            },
-            {
-              Field: "user_name",
-              Type: "varchar(255)",
-              Null: "YES",
-              Key: "",
-              Default: null,
-              Extra: "",
-              value: "3",
-            },
-            {
-              Field: "lat",
-              Type: "varchar(255)",
-              Null: "YES",
-              Key: "",
-              Default: null,
-              Extra: "",
-              value: "4",
-            },
-            {
-              Field: "lng",
-              Type: "varchar(255)",
-              Null: "YES",
-              Key: "",
-              Default: null,
-              Extra: "",
-              value: "5",
-            },
-            {
-              Default: null,
-              Extra: "",
-              Field: "createdOn",
-              Key: "",
-              Null: "YES",
-              Type: "varchar(255)",
-              value: "wq",
-            },
-          ],
           tableData: {
+            tracking_type: dataSet.tracking_type,
             user_id: dataSet.user_id,
             user_name: dataSet.user_name,
             lat: dataSet.lat,
             lng: dataSet.lng,
             createdOn: dataSet.createdOn,
+            mobile_brand: Device.brand,
+            mobile_model: Device.modelName,
+            mobile_os_name: Device.osName,
+            mobile_os_version: Device.osVersion,
+            mobile_os_internal_buildid: Device.osInternalBuildId,
           },
         }),
       });
@@ -391,11 +345,13 @@ function HomeScreen({
       Alert.alert("Permissions Error", "Location permissions are not granted.");
     }
 
-    if (fg.status === "granted" && bg.status === "granted" && enabled) {
-      console.log("✅ Permissions granted");
+    if (fg.status === "granted" && enabled) {
+      console.log("✅ Foreground permissions granted");
+      startForegroundTracking();
+    }
+    if (bg.status === "granted" && enabled) {
+      console.log("✅ Background Permissions granted");
       startBackgroundTracking();
-    } else {
-      console.log("❌ Permissions not granted");
     }
   };
 
@@ -434,13 +390,16 @@ function HomeScreen({
         };
         setLocation(coords);
 
-        saveLocationData({
-          user_id: userId,
-          user_name: userName,
-          lat: coords.latitude,
-          lng: coords.longitude,
-          createdOn: createdOn,
-        });
+        if (userId && userName) {
+          saveLocationData({
+            tracking_type: "foreground",
+            user_id: userId,
+            user_name: userName,
+            lat: coords.latitude,
+            lng: coords.longitude,
+            createdOn: createdOn,
+          });
+        }
       }
     );
 
