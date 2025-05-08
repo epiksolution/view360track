@@ -10,11 +10,13 @@ import {
   SafeAreaView,
   TouchableOpacity,
   BackHandler,
+  Platform,
+  Linking,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView as SafeBottomAreaView } from "react-native-safe-area-context";
-import * as Device from 'expo-device';
+import * as Device from "expo-device";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
@@ -35,7 +37,7 @@ type LocationCoords = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f4f7f6", // A very subtle, clean background
+    backgroundColor: "#f2f2f2", // A very subtle, clean background
   },
   scrollViewContent: {
     paddingVertical: 16, // Vertical padding
@@ -59,9 +61,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold", // Semi-bold
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: "600", // Semi-bold
+    marginBottom: 10,
+    marginHorizontal: 10,
+    color: "#080808", // Dark grey for text
   },
   locationText: {
     fontSize: 15,
@@ -79,7 +83,7 @@ const styles = StyleSheet.create({
     color: "#212529",
   },
   statusContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
     gap: 12,
     marginBottom: 16,
@@ -88,42 +92,79 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff",
     borderRadius: 15,
-    borderWidth: 1, // Thin border
+    borderWidth: 0, // Thin border
     borderColor: "#e9ecef", // Light grey border
-    padding: 15, // Slightly less padding than main section
-    alignItems: "flex-start", // Left align content
-    justifyContent: "space-between",
+    padding: 20, // Slightly less padding than main section
+    // alignItems: "flex-start", // Removed to allow flexible internal layout
+    justifyContent: "space-between", // Keep space-between to push content apart
     elevation: 0, // Remove Android shadow
     shadowOpacity: 0, // Remove iOS shadow
   },
-  statusIcon: {
-    width: 36, // Slightly smaller icons for a refined look
-    height: 36,
-    marginBottom: 15, // Space below icon
-    resizeMode: "contain",
+  statusIcon: {  
+    marginRight: 10, // Add margin to the right of the icon
   },
   statusTitle: {
-    fontSize: 16, // Slightly smaller title in column
-    fontWeight: "600",
-    marginBottom: 6,
+    fontSize: 20, // Slightly smaller title in column
+    fontWeight: "400",
+    // marginBottom: 6, // Removed default margin bottom
     color: "#343a40",
-    textAlign: "left",
+    // textAlign: "left", // Removed as row handles alignment
   },
   statusDescription: {
     fontSize: 13, // Smaller descriptive text
     color: "#6c757d",
-    marginBottom: 20, // Space before button
+    // marginBottom: 20, // Removed default margin bottom
     textAlign: "left",
     lineHeight: 18, // Line height for description
+    marginBottom: 15, // Add margin below the description text
   },
-  roundedButtonWrapper: {
-    width: "100%",
-    marginTop: "auto", // Push button to bottom within the column
-    overflow: "hidden", // Clip content to the border radius
-    borderRadius: 8, // Apply border radius here
-    elevation: 0, // Remove Android shadow
-    shadowOpacity: 0, // Remove iOS shadow
+  // New style for the container holding the button(s) inside the status column
+  statusButtonContainer: {
+    width: "100%", // Take full width to control alignment
+    alignItems: "flex-end", // Align items (buttons) to the right
+    // marginTop: 'auto', // Push this container to the bottom of the statusColumn - sometimes needed, test layout
   },
+  // --- Updated permissionDeniedBox styles ---
+  // --- Updated permissionDeniedBox styles ---
+  permissionDeniedBox: {
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    flexDirection: "column", // Keep column layout for title, text, and button
+    alignItems: "flex-start",
+  },
+  permissionDeniedTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8, // Space below the title container
+  },
+  permissionDeniedIcon: {
+    marginRight: 8, // Space between icon and title text
+  },
+  permissionDeniedTitle: {
+    fontSize: 20, // Slightly larger title font size
+    fontWeight: "400", // Medium weight for emphasis
+  },
+  permissionDeniedText: {
+    fontSize: 14, // Slightly smaller text font size for body
+    color: "#766464", // Dark red text color
+    marginBottom: 15, // Space before the button
+    lineHeight: 20, // Improve readability
+  },
+  settingsButton: {
+    borderRadius: 20,
+    padding: 10,
+    paddingHorizontal: 15, // Horizontal padding for button
+    // Style for the button itself (if you were using TouchableOpacity and Text)
+    // Since you're using React Native's Button, you control color via the 'color' prop
+  },
+  settingsButtonContainer: {
+    display: "flex",
+    flexDirection: "row", // Align button and text in a row
+    justifyContent: "flex-end", // Center the button
+    width: "100%", // Full width for the button container
+  },
+
   // --- Styles for the bottom bar using vector icons ---
   bottomBar: {
     flexDirection: "row", // Arrange children horizontally
@@ -462,6 +503,14 @@ function HomeScreen({
     }
   };
 
+  const openSettings = () => {
+    if (Platform.OS === "ios") {
+      Linking.openURL("app-settings:");
+    } else {
+      Linking.openSettings();
+    }
+  };
+
   const about = async () => {
     navigation.navigate("About");
   };
@@ -480,98 +529,149 @@ function HomeScreen({
         contentContainerStyle={styles.scrollViewContent}
         style={{ flex: 1 }}
       >
-        {/* Current Location Section */}
-        {/* <Text style={styles.title}>Current Location</Text>
-        <View style={styles.section}>
-          <FontAwesome6 name="location-crosshairs" size={24} color="#0078b4" />
-          <View style={styles.plainSection}>
-            
-            {location ? (
-              <Text style={styles.locationText}>
-                <Text>Latitude:  {location?.latitude.toFixed(6)},  </Text>
-                 
-                <Text> 
-                  Longitude:  {location?.longitude.toFixed(6)}
-                </Text> 
-              </Text>
-            ) : (
-              <Text style={styles.locationText}>
-                No recent location data available. Start tracking to see data.
-              </Text>
-            )}
+        {/* {needsBasicLocationSetup && ( */}
+        <Text style={styles.title}>Take action</Text>
+        <View
+          style={[styles.permissionDeniedBox, { backgroundColor: "#fce8e7" }]}
+        >
+          <View style={styles.permissionDeniedTitleContainer}>
+            <AntDesign
+              name="warning"
+              size={20}
+              color="#c84a48"
+              style={styles.permissionDeniedIcon}
+            />
+            <Text style={[styles.permissionDeniedTitle, { color: "#c84a48" }]}>
+              Location Services Required
+            </Text>
           </View>
-        </View> */}
+          <Text style={styles.permissionDeniedText}>
+            Location access is essential for enabling GPS tracking. Please turn
+            on device location and grant the necessary permissions in your
+            device settings.
+          </Text>
+          <View style={styles.settingsButtonContainer}>
+            <TouchableOpacity
+              style={[styles.settingsButton, { backgroundColor: "#c84a48" }]}
+              onPress={openSettings}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Go to Settings
+              </Text>
+            </TouchableOpacity>
+            {/* Button color matching the box theme */}
+          </View>
+        </View>
+        {/* // )} */}
+
+        {/* Background Permission Upgrade Box (Basic Setup OK, but Background Denied) */}
+        {/* {needsBackgroundPermissionUpgrade && ( */}
+        <View
+          style={[styles.permissionDeniedBox, { backgroundColor: "#fdefcf" }]}
+        >
+          <View style={styles.permissionDeniedTitleContainer}>
+            {/* Using a location pin icon */}
+
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color="#f7a900"
+              style={styles.permissionDeniedIcon}
+            />
+            <Text style={[styles.permissionDeniedTitle, { color: "#f7a900" }]}>
+              Enable Background Tracking
+            </Text>
+          </View>
+          <Text style={styles.permissionDeniedText}>
+            For reliable tracking when the app is closed, please change the
+            location permission to "Allow all the time" in your device settings.
+          </Text>
+
+          <View style={styles.settingsButtonContainer}>
+            <TouchableOpacity
+              style={[styles.settingsButton, { backgroundColor: "#f7a900" }]}
+              onPress={openSettings}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Go to Settings
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {/* )} */}
 
         {/* Tracking Management Section Title */}
-        <Text style={styles.sectionTitle}> Tracking status</Text>
+        <Text style={styles.title}> Tracking status</Text>
 
         {/* Tracking Status Columns */}
         <View style={styles.statusContainer}>
           {/* Background Tracking Column */}
-            <View
+          <View
             style={[
               styles.statusColumn,
               {
                 borderColor:
-                foregroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
+                  backgroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
+                borderWidth: 1, // Ensure border is visible 
               },
             ]}
-            >
-            <View style={{ position: "absolute", top: 10, right: 10 }}>
-              {foregroundStatus === "Active" ? (
-                <AntDesign name="checkcircle" size={24} color="green" />
-              ) : (
-                <AntDesign name="closecircle" size={24} color="red" />
-              )}
-            </View>
-            <Image
-              style={styles.statusIcon}
-              source={require("../../../assets/tracking/forground.png")}
-            />
-            <Text style={styles.statusTitle}>Foreground Tracking</Text>
-            <Text style={styles.statusDescription}>
-              Tracks location when the app is open.
-            </Text>
-            <View style={styles.roundedButtonWrapper}>
-              {foregroundStatus === "Inactive" && (
-                <Button
-                  title="Start"
-                  color="#0078b4" // Green
-                  onPress={startForegroundTracking}
-                />
-              )}
-            </View>
-          </View>
-          <View  style={[
-              styles.statusColumn,
-              {
-                borderColor:
-                backgroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
-              },
-            ]}>
+          >
+            {/* Status Icon (absolute) */}
             <View style={{ position: "absolute", top: 10, right: 10 }}>
               {backgroundStatus === "Active" ? (
-                <AntDesign name="checkcircle" size={24} color="green" />
+                <AntDesign name="checkcircle" size={20} color="green" />
               ) : (
-                <AntDesign name="closecircle" size={24} color="red" />
+                <AntDesign name="closecircle" size={20} color="red" />
               )}
             </View>
-            {/* Assuming this icon is still a local asset */}
-            <Image
-              style={styles.statusIcon}
-              source={require("../../../assets/tracking/background.png")}
-            />
-            <Text style={styles.statusTitle}>Background Tracking</Text>
+
+            {/* Icon and Title Row */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 8,
+              }}
+            >
+              {/* Assuming this icon is still a local asset */}
+              
+              <Entypo name="location"  style={styles.statusIcon} size={20} color="#0078b4" />
+              <Text style={styles.statusTitle}>Background Tracking</Text>
+            </View>
+
+            {/* Description - Changed Text Here */}
             <Text style={styles.statusDescription}>
-              Continues tracking even when the app is closed.
+              {backgroundStatus === "Active"
+                ? "Location tracking is currently enabled in the background."
+                : "Location tracking is currently disabled in the background."}
             </Text>
-            <View style={styles.roundedButtonWrapper}>
-              {backgroundStatus === "Inactive" && (
-                <Button
-                  title="Start"
-                  color="#0078b4" // Green
+
+            {/* Button Container (right-aligned) */}
+            <View style={styles.statusButtonContainer}>
+              {backgroundStatus === "Inactive" ? (
+                <TouchableOpacity
+                  style={[
+                    styles.settingsButton,
+                    { backgroundColor: "#0078b4" }, // Blue/Accent color
+                  ]}
                   onPress={startBackgroundTracking}
-                />
+                >
+                  <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                    Start Tracking
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.settingsButton,
+                    { backgroundColor: "#dc3545" }, // Red color for stop
+                  ]}
+                  onPress={stopBackgroundTracking}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                    Stop Tracking
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
           </View>
