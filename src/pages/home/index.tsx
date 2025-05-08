@@ -496,7 +496,11 @@ function HomeScreen({
         style={{ flex: 1 }}
       >
         {/* {needsBasicLocationSetup && ( */}
-        <Text style={styles.title}>Take action</Text>
+        {(locationStatus !== "Active" ||
+          foregroundStatus !== "Active" ||
+          backgroundStatus !== "Active") && (
+          <Text style={styles.title}>Take action</Text>
+        )}
         {locationStatus !== "Active" && (
           <View
             style={[styles.permissionDeniedBox, { backgroundColor: "#fce8e7" }]}
