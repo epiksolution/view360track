@@ -233,13 +233,15 @@ function HomeScreen({
 
       console.log("📍 Received background location:", coords);
 
-      saveLocationData({
-        user_id: userId,
-        user_name: userName,
-        lat: coords.latitude,
-        lng: coords.longitude,
-        createdOn: createdOn,
-      });
+      if (userId && userName) {
+        saveLocationData({
+          user_id: userId,
+          user_name: userName,
+          lat: coords.latitude,
+          lng: coords.longitude,
+          createdOn: createdOn,
+        });
+      }
     } else {
       console.warn("⚠️ No location data received in background task");
     }
@@ -320,6 +322,11 @@ function HomeScreen({
             lat: dataSet.lat,
             lng: dataSet.lng,
             createdOn: dataSet.createdOn,
+            mobile_brand: Device.brand,
+            mobile_model: Device.modelName,
+            mobile_os_name: Device.osName,
+            mobile_os_version: Device.osVersion,
+            mobile_os_internal_buildid: Device.osInternalBuildId,
           },
         }),
       });
@@ -393,13 +400,15 @@ function HomeScreen({
         };
         setLocation(coords);
 
-        saveLocationData({
-          user_id: userId,
-          user_name: userName,
-          lat: coords.latitude,
-          lng: coords.longitude,
-          createdOn: createdOn,
-        });
+        if (userId && userName) {
+          saveLocationData({
+            user_id: userId,
+            user_name: userName,
+            lat: coords.latitude,
+            lng: coords.longitude,
+            createdOn: createdOn,
+          });
+        }
       }
     );
 
