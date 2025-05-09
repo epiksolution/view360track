@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     // textAlign: "left", // Removed as row handles alignment
   },
   statusDescription: {
-    fontSize: 13, // Smaller descriptive text
+    fontSize: 14, // Smaller descriptive text
     color: "#6c757d",
     // marginBottom: 20, // Removed default margin bottom
     textAlign: "left",

@@ -49,6 +49,8 @@ function HomeScreen({
   const [locationStatus, setLocationStatus] = useState("Inactive");
   const [foregroundStatus, setForegroundStatus] = useState("Inactive");
   const [backgroundStatus, setBackgroundStatus] = useState("Inactive");
+  const [foregroundPermission, setForegroundPermission] = useState(false);
+  const [backgroundPermission, setBackgroundPermission] = useState(false);
 
   useEffect(() => {
     checkAuthToken();
@@ -166,6 +168,9 @@ function HomeScreen({
     const fg = await Location.requestForegroundPermissionsAsync();
     const bg = await Location.requestBackgroundPermissionsAsync();
 
+    setForegroundPermission(fg.status === "granted");
+    setBackgroundPermission(bg.status === "granted");
+
     console.log("🛂 Foreground permission:", fg.status);
     console.log("🛂 Background permission:", bg.status);
 
@@ -175,16 +180,6 @@ function HomeScreen({
     if (enabled) {
       setLocationStatus("Active");
     }
-    //  else {
-    //   Alert.alert(
-    //     "Location Services Disabled",
-    //     "Please enable GPS/location services."
-    //   );
-    // }
-
-    // if (fg.status !== "granted" || bg.status !== "granted") {
-    //   Alert.alert("Permissions Error", "Location permissions are not granted.");
-    // }
 
     if (fg.status === "granted" && enabled) {
       console.log("✅ Foreground permissions granted");
@@ -334,13 +329,12 @@ function HomeScreen({
         contentContainerStyle={styles.scrollViewContent}
         style={{ flex: 1 }}
       >
-        {/* {needsBasicLocationSetup && ( */}
-        {(locationStatus !== "Active" ||
-          foregroundStatus !== "Active" ||
-          backgroundStatus !== "Active") && (
-          <Text style={styles.title}>Take action</Text>
+        {!backgroundPermission && !foregroundPermission && (
+        <Text style={styles.title}>Take action</Text>
         )}
-        {locationStatus !== "Active" && (
+        {/* Location Services Section Title */}
+
+        {!backgroundPermission && !foregroundPermission && (
           <View
             style={[styles.permissionDeniedBox, { backgroundColor: "#fce8e7" }]}
           >
@@ -371,55 +365,44 @@ function HomeScreen({
                   Go to Settings
                 </Text>
               </TouchableOpacity>
-              {/* Button color matching the box theme */}
             </View>
           </View>
         )}
 
-        {locationStatus === "Active" &&
-          (foregroundStatus !== "Active" || backgroundStatus !== "Active") && (
-            <View
-              style={[
-                styles.permissionDeniedBox,
-                { backgroundColor: "#fdefcf" },
-              ]}
-            >
-              <View style={styles.permissionDeniedTitleContainer}>
-                {/* Using a location pin icon */}
-
-                <Ionicons
-                  name="location-outline"
-                  size={20}
-                  color="#f7a900"
-                  style={styles.permissionDeniedIcon}
-                />
-                <Text
-                  style={[styles.permissionDeniedTitle, { color: "#f7a900" }]}
-                >
-                  Enable Background Tracking
-                </Text>
-              </View>
-              <Text style={styles.permissionDeniedText}>
-                For reliable tracking when the app is closed, please change the
-                location permission to "Allow all the time" in your device
-                settings.
+        {!backgroundPermission && foregroundPermission &&(
+          <View
+            style={[styles.permissionDeniedBox, { backgroundColor: "#fdefcf" }]}
+          >
+            <View style={styles.permissionDeniedTitleContainer}>
+              <Ionicons
+                name="location-outline"
+                size={20}
+                color="#f7a900"
+                style={styles.permissionDeniedIcon}
+              />
+              <Text
+                style={[styles.permissionDeniedTitle, { color: "#f7a900" }]}
+              >
+                Enable Background Tracking
               </Text>
-
-              <View style={styles.settingsButtonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.settingsButton,
-                    { backgroundColor: "#f7a900" },
-                  ]}
-                  onPress={openSettings}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                    Go to Settings
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          )}
+            <Text style={styles.permissionDeniedText}>
+              For reliable tracking when the app is closed, please change the
+              location permission to "Allow all the time" in your device
+              settings.
+            </Text>
+            <View style={styles.settingsButtonContainer}>
+              <TouchableOpacity
+                style={[styles.settingsButton, { backgroundColor: "#f7a900" }]}
+                onPress={openSettings}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  Go to Settings
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Tracking Management Section Title */}
         <Text style={styles.title}> Tracking status</Text>
@@ -429,20 +412,15 @@ function HomeScreen({
           {/* Background Tracking Column */}
           <View
             style={[
-              styles.statusColumn,
-              {
-                borderColor:
-                  backgroundStatus === "Active" ? "#a9dcb5" : "#f1aeb5", // Light green or light red
-                borderWidth: 1, // Ensure border is visible
-              },
+              styles.statusColumn
             ]}
           >
             {/* Status Icon (absolute) */}
             <View style={{ position: "absolute", top: 10, right: 10 }}>
-              {backgroundStatus === "Active" ? (
-                <AntDesign name="checkcircle" size={20} color="green" />
+              {foregroundStatus === "Active" || backgroundStatus === "Active" ? (
+              <AntDesign name="checkcircle" size={20} color="green" />
               ) : (
-                <AntDesign name="closecircle" size={20} color="red" />
+              <AntDesign name="closecircle" size={20} color="red" />
               )}
             </View>
 
@@ -462,7 +440,7 @@ function HomeScreen({
                 size={20}
                 color="#0078b4"
               />
-              <Text style={styles.statusTitle}>Background Tracking</Text>
+              <Text style={styles.statusTitle}>GPS Tracking</Text>
             </View>
 
             {/* Description - Changed Text Here */}
@@ -474,18 +452,25 @@ function HomeScreen({
 
             {/* Button Container (right-aligned) */}
             <View style={styles.statusButtonContainer}>
-              {backgroundStatus === "Inactive" && (
-                <TouchableOpacity
-                  style={[
-                    styles.settingsButton,
-                    { backgroundColor: "#0078b4" }, // Blue/Accent color
-                  ]}
-                  onPress={checkPermissionsAndServices}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                    Start Tracking
-                  </Text>
-                </TouchableOpacity>
+              {backgroundStatus === "Inactive" || foregroundStatus === "Inactive" && (
+              <TouchableOpacity
+                style={[
+                styles.settingsButton,
+                { backgroundColor: foregroundPermission && backgroundPermission ? "#0078b4" : "#d3d3d3" }, // Blue/Accent color if enabled, gray if disabled
+                ]}
+                onPress={async () => {
+                if (foregroundPermission && !backgroundPermission) {
+                  await startForegroundTracking();
+                } else if (foregroundPermission && backgroundPermission) {
+                  await startBackgroundTracking();
+                }
+                }}
+                disabled={!foregroundPermission || !backgroundPermission} // Disable button if permissions are not granted or Alert condition
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Start Tracking
+                </Text>
+              </TouchableOpacity>
               )}
             </View>
           </View>
