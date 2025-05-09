@@ -133,26 +133,9 @@ function HomeScreen({
     createdOn: string;
   }) => {
     try {
-      // await fetchPostCall(`database/addTableRow`, {
-      //   tableName: "location_history",
-      //   tableData: {
-      //     tracking_type: dataSet.tracking_type,
-      //     user_id: dataSet.user_id,
-      //     user_name: dataSet.user_name,
-      //     lat: dataSet.lat,
-      //     lng: dataSet.lng,
-      //     createdOn: dataSet.createdOn,
-      //     mobile_brand: Device.brand,
-      //     mobile_model: Device.modelName,
-      //     mobile_os_name: Device.osName,
-      //     mobile_os_version: Device.osVersion,
-      //     mobile_os_internal_buildid: Device.osInternalBuildId,
-      //   },
-      // });
-      await fetch(`${BASE_URL}database/addTableRow`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+      if (authToken) {
+        const result = await fetchPostCall(`database/addTableRow`, {
           tableName: "location_history",
           tableData: {
             tracking_type: dataSet.tracking_type,
@@ -167,9 +150,13 @@ function HomeScreen({
             mobile_os_version: Device.osVersion,
             mobile_os_internal_buildid: Device.osInternalBuildId,
           },
-        }),
-      });
-      console.log("✅ location sent");
+        }, Device.osInternalBuildId);
+        if (!result?.status && result?.error == "multipleLogin") {
+          logout();
+        }
+
+        console.log("✅ location sent");
+      }
     } catch (err) {
       console.error("❌ send error:", err);
     }

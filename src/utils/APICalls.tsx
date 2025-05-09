@@ -1,6 +1,10 @@
 import { BASE_URL } from "../constants/constants";
 
-export const fetchPostCall = async (url: string, bodyData: any) => {
+export const fetchPostCall = async (
+  url: string,
+  bodyData: any,
+  deviceId: any
+) => {
   let response: any = {
     status: false,
     data: {},
@@ -8,21 +12,29 @@ export const fetchPostCall = async (url: string, bodyData: any) => {
   };
   try {
     bodyData = { ...bodyData };
-    console.log("API URL:", `bodyData`, bodyData);
+
+    let headers: any = {
+      "Content-Type": "application/json",
+    };
+    if (deviceId) {
+      headers["apphit"] = "view360";
+      headers["deviceid"] = deviceId;
+    }
     const APIResponse = await fetch(`${BASE_URL}${url}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: headers,
       body: JSON.stringify(bodyData),
     });
 
     const data = await APIResponse.json();
-    console.log("API Response:", APIResponse);
-    console.log("API Data:", data);
     if (APIResponse.ok) {
-      response.status = data.status || false;
-      response.data = data.data || data;
+      if (data?.error === "multipleLogin") {
+        response.error = data.error;
+        response.status = false;
+      } else {
+        response.status = data.status || false;
+        response.data = data.data || data;
+      }
     }
     return response;
   } catch (error) {

@@ -14,6 +14,7 @@ import { NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import * as Device from "expo-device";
 
 import {
   AUTH_TOKEN_KEY,
@@ -47,19 +48,17 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
     }
 
     try {
-      // const response = await fetchPostCall("auth/login", {
-      //   Skip2FA: false,
-      //   email: username,
-      //   password,
-      //   token: "",
-      // });
-      // console.log("Login Response:", response);
       const response = await fetch(`${BASE_URL}auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          apphit: "view360",
+          deviceid: Device.osInternalBuildId || "",
         },
         body: JSON.stringify({
+          deviceId: Device.osInternalBuildId || "",
+          appType: "mobile",
+          type: Device.osName,
           Skip2FA: false,
           email: username,
           password,
