@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
@@ -21,13 +22,13 @@ import {
   USER_ID,
   USER_NAME,
 } from "../../constants/constants";
-import { fetchPostCall} from "../../utils/APICalls";
-
+import { fetchPostCall } from "../../utils/APICalls";
 
 function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     checkAuthToken();
@@ -46,14 +47,9 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
       return;
     }
 
+    setLoading(true);
+
     try {
-      // const response = await fetchPostCall("auth/login", {
-      //   Skip2FA: false,
-      //   email: username,
-      //   password,
-      //   token: "",
-      // });
-      // console.log("Login Response:", response);
       const response = await fetch(`${BASE_URL}auth/login`, {
         method: "POST",
         headers: {
@@ -70,7 +66,9 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
       const data = await response.json();
       if (response.ok) {
         const user = data?.data?.user || {};
-        const user_name = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        const user_name = `${user.firstname || ""} ${
+          user.lastname || ""
+        }`.trim();
         const user_id = user.id || "";
         const setCookieHeader = response.headers.get("Set-Cookie");
 
@@ -86,23 +84,25 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
     } catch (error) {
       console.error("Login Error:", error);
       Alert.alert("Error", "An error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
-  // colors={["#f0e2f3", "#e3f2fd"]}
-  // colors={["#F5FAFD", "#EBF5FB", "#E1F0F9"]}
-  // colors={["#e3f2fd", "#ffffff"]}
+
   return (
     <LinearGradient colors={["#e3f2fd", "#f0e2f3"]} style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.inner}
       >
-        <Image 
+        <Image
           source={require("../../../assets/logo.png")}
           style={styles.logo}
         />
         <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.subtitle}>Please enter the details below to continue.</Text>
+        <Text style={styles.subtitle}>
+          Please enter the details below to continue.
+        </Text>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
@@ -141,8 +141,16 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log In</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Log In</Text>
+          )}
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </LinearGradient>
