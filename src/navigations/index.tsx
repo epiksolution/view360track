@@ -18,7 +18,7 @@ export default function NavigationRoute() {
       <Stack.Navigator
         initialRouteName="Login"
         screenOptions={{
-          gestureEnabled: true,
+          gestureEnabled: false,
           gestureDirection: "horizontal",
           transitionSpec: {
             open: TransitionSpecs.TransitionIOSSpec,
