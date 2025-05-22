@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -23,24 +23,14 @@ import {
   USER_ID,
   USER_NAME,
 } from "../../constants/constants";
-import { fetchPostCall } from "../../utils/APICalls";
+import { AuthContext } from '../../context/AuthContext';
 
 function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    checkAuthToken();
-  }, []);
-
-  const checkAuthToken = async () => {
-    const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-    if (authToken) {
-      navigation.navigate("Home");
-    }
-  };
+  const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -82,7 +72,7 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
           await SecureStore.setItemAsync(USER_ID, user_id);
           await SecureStore.setItemAsync(USER_NAME, user_name);
           await SecureStore.setItemAsync(AUTH_TOKEN_KEY, setCookieHeader);
-          navigation.navigate("Home");
+          login();
         }
       } else {
         Alert.alert("Error", data.message || "Login failed. Please try again.");

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Text,
   View,
@@ -23,6 +23,7 @@ import {
   USER_NAME,
 } from "../../constants/constants";
 import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
 import { fetchPostCall } from "../../utils/APICalls";
@@ -51,6 +52,7 @@ function HomeScreen({
   const [backgroundStatus, setBackgroundStatus] = useState("Inactive");
   const [foregroundPermission, setForegroundPermission] = useState(false);
   const [backgroundPermission, setBackgroundPermission] = useState(false);
+  const { logout } = useContext(AuthContext);
 
   useEffect(() => {
     checkAuthToken();
@@ -154,7 +156,7 @@ function HomeScreen({
           },
         }, Device.osInternalBuildId);
         if (!result?.status && result?.error == "multipleLogin") {
-          logout();
+          logoutEvent();
         }
 
         console.log("✅ location sent");
@@ -313,14 +315,13 @@ function HomeScreen({
   const profile = async () => {
     navigation.navigate("Profile");
   };
-  const logout = async () => {
-    setUserId("");
-    setLocalUserName("");
-    setUserName("");
+  const logoutEvent = async () => {
+    // setUserId("");
+    // setLocalUserName("");
+    // setUserName("");
     stopBackgroundTracking();
     stopForegroundTracking();
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-    navigation.navigate("Login");
+    logout();
   };
 
   return (
@@ -492,7 +493,7 @@ function HomeScreen({
         </TouchableOpacity>
 
         {/* Logout Tab */}
-        <TouchableOpacity style={styles.bottomTab} onPress={logout}>
+        <TouchableOpacity style={styles.bottomTab} onPress={logoutEvent}>
           <AntDesign name="logout" size={18} color="red" />
           <Text style={[styles.tabLabel, styles.logoutTabLabel]}>Logout</Text>
         </TouchableOpacity>
