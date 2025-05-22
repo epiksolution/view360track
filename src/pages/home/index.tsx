@@ -26,7 +26,7 @@ import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
-import { fetchPostCall } from "../../utils/APICalls";
+import { fetchPostCall, fetchGetCall } from "../../utils/APICalls";
 
 const LOCATION_TASK_NAME = "background-location-task";
 
@@ -43,6 +43,7 @@ function HomeScreen({
   setUserName: (name: string) => void;
 }) {
   const [location, setLocation] = useState<LocationCoords | null>(null);
+  const [locationTriggerTime, setLocationTriggerTime] = useState(30);
   const [userId, setUserId] = useState("");
   const [userName, setLocalUserName] = useState("");
   const [foregroundSub, setForegroundSub] =
@@ -193,6 +194,18 @@ function HomeScreen({
     }
   };
 
+  const getTriggerTime = async () => {
+    const result = await fetchGetCall(`settings/configs/APP_LOGIN_SESSION`, Device.osInternalBuildId);
+    if (!result?.status && result?.error == "multipleLogin") {
+      logoutEvent();
+    } else if (result?.data?.length && result?.data[0]?.config) {
+      const config = JSON.parse(result.data[0].config);
+      if (config?.locationTriggerTime) {
+        setLocationTriggerTime(config?.locationTriggerTime || 30);
+      }
+    }
+  };
+
   const checkAuthToken = async () => {
     const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
     if (authToken) {
@@ -211,10 +224,11 @@ function HomeScreen({
   };
 
   const startForegroundTracking = async () => {
+    await getTriggerTime();
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 30000,
+        timeInterval: locationTriggerTime * 1000,
         distanceInterval: 0,
       },
       async (loc) => {
