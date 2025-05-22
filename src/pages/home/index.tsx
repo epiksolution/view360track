@@ -27,6 +27,7 @@ import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
+import { insertLocationTable } from "../../utils/SQLiteService";
 import { fetchPostCall, fetchGetCall } from "../../utils/APICalls";
 
 const LOCATION_TASK_NAME = "background-location-task";
@@ -166,28 +167,30 @@ function HomeScreen({
       const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
       if (authToken) {
         await checkInternetConnection();
+        const tableDataSet = {
+          tracking_type: dataSet.tracking_type,
+          user_id: dataSet.user_id,
+          user_name: dataSet.user_name,
+          lat: dataSet.lat,
+          lng: dataSet.lng,
+          createdOn: dataSet.createdOn,
+          mobile_brand: Device.brand,
+          mobile_model: Device.modelName,
+          mobile_os_name: Device.osName,
+          mobile_os_version: Device.osVersion,
+          mobile_os_internal_buildid: Device.osInternalBuildId,
+        };
         if (internetConnect) {
           const result = await fetchPostCall(`database/addTableRow`, {
             tableName: "location_history",
-            tableData: {
-              tracking_type: dataSet.tracking_type,
-              user_id: dataSet.user_id,
-              user_name: dataSet.user_name,
-              lat: dataSet.lat,
-              lng: dataSet.lng,
-              createdOn: dataSet.createdOn,
-              mobile_brand: Device.brand,
-              mobile_model: Device.modelName,
-              mobile_os_name: Device.osName,
-              mobile_os_version: Device.osVersion,
-              mobile_os_internal_buildid: Device.osInternalBuildId,
-            },
+            tableData: tableDataSet,
           }, Device.osInternalBuildId);
           if (!result?.status && result?.error == "multipleLogin") {
             logoutEvent();
           }
         } else {
-          
+          insertLocationTable(tableDataSet);
+          console.log("📦 Location data saved to SQLite");
         }
         console.log("✅ location sent");
       }
