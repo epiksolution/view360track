@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
 import { createStackNavigator, TransitionSpecs, CardStyleInterpolators } from "@react-navigation/stack";
 import { Image } from "react-native";
 
@@ -8,6 +9,7 @@ import HomeScreen from "../pages/home/index";
 import AboutScreen from "../pages/about";
 import ProfileScreen from "../pages/profile";
 import { AuthContext } from '../context/AuthContext';
+import { AUTH_TOKEN_KEY } from "../constants/constants";
 
 const Stack = createStackNavigator();
 
@@ -82,7 +84,20 @@ function AppStack() {
 }
 
 export default function NavigationRoute() {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { login, logout, isLoggedIn } = useContext(AuthContext);
+
+  useEffect(() => {
+    checkAuthToken();
+  }, []);
+
+  const checkAuthToken = async () => {
+    const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+    if (authToken) {
+      login();
+    } else {
+      logout();
+    }
+  };
 
   return (
     <NavigationContainer>
