@@ -185,7 +185,7 @@ function HomeScreen({
           callLocationApi(tableDataSet);
           console.log("📦 Location data sent to API");
         } else {
-          insertLocationTable(tableDataSet);
+          // insertLocationTable(tableDataSet);
           console.log("📦 Location data saved to SQLite");
         }
         console.log("✅ location sent");
