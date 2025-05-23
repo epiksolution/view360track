@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator, TransitionSpecs, CardStyleInterpolators } from "@react-navigation/stack";
 import { Image } from "react-native";
@@ -29,6 +29,7 @@ function LoginStack() {
 }
 
 function AppStack() {
+  const { userName } = useContext(AuthContext);
   return (
     <Stack.Navigator
       screenOptions={{
@@ -43,7 +44,7 @@ function AppStack() {
         )}
         options={{
           headerShown: true,
-          title: `Welcome,`,
+          title: `Welcome, ${userName}`,
           headerShadowVisible: false,
           headerLeft: () => (
             <Image

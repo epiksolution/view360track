@@ -30,7 +30,7 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useContext(AuthContext);
+  const { login, setUserName } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -72,6 +72,7 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
           await SecureStore.setItemAsync(USER_ID, user_id);
           await SecureStore.setItemAsync(USER_NAME, user_name);
           await SecureStore.setItemAsync(AUTH_TOKEN_KEY, setCookieHeader);
+          setUserName(user_name);
           login();
         }
       } else {
