@@ -4,12 +4,16 @@ import { AUTH_TOKEN_KEY, USER_ID, USER_NAME } from "../constants/constants";
 
 type AuthContextType = {
   isLoggedIn: boolean;
+  userName: string;
+  setUserName: (name: string) => void;
   login: () => void;
   logout: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
+  userName: "",
+  setUserName: () => {},
   login: () => {},
   logout: () => {},
 });
@@ -20,6 +24,7 @@ type Props = {
 
 export const AuthProvider = ({ children }: Props) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [userName, setUserName] = useState("");
 
   const login = async () => {
     // Simulate a login action
@@ -31,7 +36,7 @@ export const AuthProvider = ({ children }: Props) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, userName, setUserName, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

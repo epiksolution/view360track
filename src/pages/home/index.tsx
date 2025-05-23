@@ -56,6 +56,7 @@ function HomeScreen({
   const [backgroundStatus, setBackgroundStatus] = useState("Inactive");
   const [foregroundPermission, setForegroundPermission] = useState(false);
   const [backgroundPermission, setBackgroundPermission] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { logout } = useContext(AuthContext);
 
   useEffect(() => {
@@ -86,17 +87,13 @@ function HomeScreen({
   useFocusEffect(
     React.useCallback(() => {
       checkAuthToken();
+      checkInternetConnection();
+      checkPermissionsAndServices();
 
       return () => {
         setUserId("");
         setLocalUserName("");
       };
-    }, [])
-  );
-
-  useFocusEffect(
-    React.useCallback(() => {
-      checkInternetConnection();
     }, [])
   );
 
@@ -221,6 +218,7 @@ function HomeScreen({
 
     setForegroundPermission(fg.status === "granted");
     setBackgroundPermission(bg.status === "granted");
+    setLoading(false);
 
     console.log("🛂 Foreground permission:", fg.status);
     console.log("🛂 Background permission:", bg.status);
@@ -392,79 +390,82 @@ function HomeScreen({
         contentContainerStyle={styles.scrollViewContent}
         style={{ flex: 1 }}
       >
-        {!backgroundPermission && !foregroundPermission && (
-        <Text style={styles.title}>Take action</Text>
-        )}
         {/* Location Services Section Title */}
-
-        {!backgroundPermission && !foregroundPermission && (
-          <View
-            style={[styles.permissionDeniedBox, { backgroundColor: "#fce8e7" }]}
-          >
-            <View style={styles.permissionDeniedTitleContainer}>
-              <AntDesign
-                name="warning"
-                size={20}
-                color="#c84a48"
-                style={styles.permissionDeniedIcon}
-              />
-              <Text
-                style={[styles.permissionDeniedTitle, { color: "#c84a48" }]}
+        {!loading && (
+          <>
+            {!backgroundPermission && !foregroundPermission && (
+              <Text style={styles.title}>Take action</Text>
+            )}
+            {!backgroundPermission && !foregroundPermission && (
+              <View
+                style={[styles.permissionDeniedBox, { backgroundColor: "#fce8e7" }]}
               >
-                Location Services Required
-              </Text>
-            </View>
-            <Text style={styles.permissionDeniedText}>
-              Location access is essential for enabling GPS tracking. Please
-              turn on device location and grant the necessary permissions in
-              your device settings.
-            </Text>
-            <View style={styles.settingsButtonContainer}>
-              <TouchableOpacity
-                style={[styles.settingsButton, { backgroundColor: "#c84a48" }]}
-                onPress={openSettings}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                  Go to Settings
+                <View style={styles.permissionDeniedTitleContainer}>
+                  <AntDesign
+                    name="warning"
+                    size={20}
+                    color="#c84a48"
+                    style={styles.permissionDeniedIcon}
+                  />
+                  <Text
+                    style={[styles.permissionDeniedTitle, { color: "#c84a48" }]}
+                  >
+                    Location Services Required
+                  </Text>
+                </View>
+                <Text style={styles.permissionDeniedText}>
+                  Location access is essential for enabling GPS tracking. Please
+                  turn on device location and grant the necessary permissions in
+                  your device settings.
                 </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+                <View style={styles.settingsButtonContainer}>
+                  <TouchableOpacity
+                    style={[styles.settingsButton, { backgroundColor: "#c84a48" }]}
+                    onPress={openSettings}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                      Go to Settings
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
 
-        {!backgroundPermission && foregroundPermission &&(
-          <View
-            style={[styles.permissionDeniedBox, { backgroundColor: "#fdefcf" }]}
-          >
-            <View style={styles.permissionDeniedTitleContainer}>
-              <Ionicons
-                name="location-outline"
-                size={20}
-                color="#f7a900"
-                style={styles.permissionDeniedIcon}
-              />
-              <Text
-                style={[styles.permissionDeniedTitle, { color: "#f7a900" }]}
+            {!backgroundPermission && foregroundPermission &&(
+              <View
+                style={[styles.permissionDeniedBox, { backgroundColor: "#fdefcf" }]}
               >
-                Enable Background Tracking
-              </Text>
-            </View>
-            <Text style={styles.permissionDeniedText}>
-              For reliable tracking when the app is closed, please change the
-              location permission to "Allow all the time" in your device
-              settings.
-            </Text>
-            <View style={styles.settingsButtonContainer}>
-              <TouchableOpacity
-                style={[styles.settingsButton, { backgroundColor: "#f7a900" }]}
-                onPress={openSettings}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                  Go to Settings
+                <View style={styles.permissionDeniedTitleContainer}>
+                  <Ionicons
+                    name="location-outline"
+                    size={20}
+                    color="#f7a900"
+                    style={styles.permissionDeniedIcon}
+                  />
+                  <Text
+                    style={[styles.permissionDeniedTitle, { color: "#f7a900" }]}
+                  >
+                    Enable Background Tracking
+                  </Text>
+                </View>
+                <Text style={styles.permissionDeniedText}>
+                  For reliable tracking when the app is closed, please change the
+                  location permission to "Allow all the time" in your device
+                  settings.
                 </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                <View style={styles.settingsButtonContainer}>
+                  <TouchableOpacity
+                    style={[styles.settingsButton, { backgroundColor: "#f7a900" }]}
+                    onPress={openSettings}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                      Go to Settings
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </>
         )}
 
         {/* Tracking Management Section Title */}
