@@ -27,7 +27,7 @@ import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
-import { insertLocationTable } from "../../utils/SQLiteService";
+import db, { syncAllDBData, insertLocationTable } from "../../utils/SQLiteService";
 import { fetchPostCall, fetchGetCall } from "../../utils/APICalls";
 
 const LOCATION_TASK_NAME = "background-location-task";
@@ -108,6 +108,7 @@ function HomeScreen({
         if (state.isConnected) {
           console.log("Internet connected");
           setInternetConnect(true);
+          syncDbData();
         } else {
           console.log("No internet connection");
           setInternetConnect(false);
@@ -181,13 +182,8 @@ function HomeScreen({
           mobile_os_internal_buildid: Device.osInternalBuildId,
         };
         if (internetConnect) {
-          const result = await fetchPostCall(`database/addTableRow`, {
-            tableName: "location_history",
-            tableData: tableDataSet,
-          }, Device.osInternalBuildId);
-          if (!result?.status && result?.error == "multipleLogin") {
-            logoutEvent();
-          }
+          callLocationApi(tableDataSet);
+          console.log("📦 Location data sent to API");
         } else {
           insertLocationTable(tableDataSet);
           console.log("📦 Location data saved to SQLite");
@@ -196,6 +192,26 @@ function HomeScreen({
       }
     } catch (err) {
       console.error("❌ send error:", err);
+    }
+  };
+
+  const callLocationApi = async (tableDataSet: any) => {
+    const result = await fetchPostCall(`database/addTableRow`, {
+      tableName: "location_history",
+      tableData: tableDataSet,
+    }, Device.osInternalBuildId);
+    if (!result?.status && result?.error == "multipleLogin") {
+      logoutEvent();
+    }
+  }
+
+  const syncDbData = async () => {
+    const allDbData: any = await syncAllDBData();
+    console.log("📦 All data from SQLite:", allDbData);
+    for (const data of allDbData) {
+      console.log("📦 Syncing data to API:------------------------>>>>>>>>>>>", data);
+      callLocationApi(data);
+      db.runSync("DELETE FROM location_history WHERE id = ?", [data.id]);
     }
   };
 
