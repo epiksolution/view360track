@@ -89,66 +89,69 @@ function LoginScreen({ navigation }: { navigation: NavigationProp<any> }) {
   return (
     <LinearGradient colors={["#e3f2fd", "#f0e2f3"]} style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.inner}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.inner}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
       >
-        <Image
-          source={require("../../../assets/logo.png")}
-          style={styles.logo}
+      <Image
+        source={require("../../../assets/logo.png")}
+        style={styles.logo}
+      />
+      <Text style={styles.title}>Sign In</Text>
+      <Text style={styles.subtitle}>
+        Please enter the details below to continue.
+      </Text>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+        style={styles.input}
+        placeholder="Enter Your Email"
+        placeholderTextColor="#aaa"
+        value={username}
+        onChangeText={setUsername}
+        keyboardType="email-address"
+        autoCapitalize="none"
         />
-        <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.subtitle}>
-          Please enter the details below to continue.
-        </Text>
+      </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Your Email"
-            placeholderTextColor="#aaa"
-            value={username}
-            onChangeText={setUsername}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Your Password"
-              placeholderTextColor="#aaa"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setShowPassword(!showPassword)}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off" : "eye"}
-                size={20}
-                color="#aaa"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Password</Text>
+        <View style={styles.passwordWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Your Password"
+          placeholderTextColor="#aaa"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
         <TouchableOpacity
-          style={[styles.button, loading && { opacity: 0.7 }]}
-          onPress={handleLogin}
-          disabled={loading}
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
         >
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Log In</Text>
-          )}
+          <Ionicons
+          name={showPassword ? "eye-off" : "eye"}
+          size={20}
+          color="#aaa"
+          />
         </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={{ marginBottom: Platform.OS === "ios" ? 0 : 20 }}>
+        <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleLogin}
+        disabled={loading}
+        >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Log In</Text>
+        )}
+        </TouchableOpacity>
+      </View>
       </KeyboardAvoidingView>
     </LinearGradient>
   );
