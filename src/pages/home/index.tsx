@@ -10,6 +10,7 @@ import {
   Platform,
   Linking,
 } from "react-native";
+import NetInfo from '@react-native-community/netinfo';
 import * as SecureStore from "expo-secure-store";
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView as SafeBottomAreaView } from "react-native-safe-area-context";
@@ -26,6 +27,7 @@ import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
+import db, { syncAllDBData, insertLocationTable } from "../../utils/SQLiteService";
 import { fetchPostCall, fetchGetCall } from "../../utils/APICalls";
 
 const LOCATION_TASK_NAME = "background-location-task";
@@ -43,6 +45,7 @@ function HomeScreen({
   setUserName: (name: string) => void;
 }) {
   const [location, setLocation] = useState<LocationCoords | null>(null);
+  const [internetConnect, setInternetConnect] = useState(false);
   const [locationTriggerTime, setLocationTriggerTime] = useState(30);
   const [userId, setUserId] = useState("");
   const [userName, setLocalUserName] = useState("");
@@ -90,6 +93,30 @@ function HomeScreen({
       };
     }, [])
   );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkInternetConnection();
+    }, [])
+  );
+
+  const checkInternetConnection = () => {
+    return new Promise((resolve) => {
+      NetInfo.fetch().then(state => {
+        console.log('Connection type', state.type);
+        console.log('Is connected?', state.isConnected);
+        if (state.isConnected) {
+          console.log("Internet connected");
+          setInternetConnect(true);
+          syncDbData();
+        } else {
+          console.log("No internet connection");
+          setInternetConnect(false);
+        }
+        resolve(true);
+      });
+    });
+  }
 
   TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
     console.log("📡 Background task triggered");
@@ -140,30 +167,51 @@ function HomeScreen({
     try {
       const authToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
       if (authToken) {
-        const result = await fetchPostCall(`database/addTableRow`, {
-          tableName: "location_history",
-          tableData: {
-            tracking_type: dataSet.tracking_type,
-            user_id: dataSet.user_id,
-            user_name: dataSet.user_name,
-            lat: dataSet.lat,
-            lng: dataSet.lng,
-            createdOn: dataSet.createdOn,
-            mobile_brand: Device.brand,
-            mobile_model: Device.modelName,
-            mobile_os_name: Device.osName,
-            mobile_os_version: Device.osVersion,
-            mobile_os_internal_buildid: Device.osInternalBuildId,
-          },
-        }, Device.osInternalBuildId);
-        if (!result?.status && result?.error == "multipleLogin") {
-          logoutEvent();
+        await checkInternetConnection();
+        const tableDataSet = {
+          tracking_type: dataSet.tracking_type,
+          user_id: dataSet.user_id,
+          user_name: dataSet.user_name,
+          lat: dataSet.lat,
+          lng: dataSet.lng,
+          createdOn: dataSet.createdOn,
+          mobile_brand: Device.brand,
+          mobile_model: Device.modelName,
+          mobile_os_name: Device.osName,
+          mobile_os_version: Device.osVersion,
+          mobile_os_internal_buildid: Device.osInternalBuildId,
+        };
+        if (internetConnect) {
+          callLocationApi(tableDataSet);
+          console.log("📦 Location data sent to API");
+        } else {
+          // insertLocationTable(tableDataSet);
+          console.log("📦 Location data saved to SQLite");
         }
-
         console.log("✅ location sent");
       }
     } catch (err) {
       console.error("❌ send error:", err);
+    }
+  };
+
+  const callLocationApi = async (tableDataSet: any) => {
+    const result = await fetchPostCall(`database/addTableRow`, {
+      tableName: "location_history",
+      tableData: tableDataSet,
+    }, Device.osInternalBuildId);
+    if (!result?.status && result?.error == "multipleLogin") {
+      logoutEvent();
+    }
+  }
+
+  const syncDbData = async () => {
+    const allDbData: any = await syncAllDBData();
+    console.log("📦 All data from SQLite:", allDbData);
+    for (const data of allDbData) {
+      console.log("📦 Syncing data to API:------------------------>>>>>>>>>>>", data);
+      callLocationApi(data);
+      db.runSync("DELETE FROM location_history WHERE id = ?", [data.id]);
     }
   };
 
