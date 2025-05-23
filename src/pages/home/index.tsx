@@ -23,7 +23,7 @@ import {
   USER_ID,
   USER_NAME,
 } from "../../constants/constants";
-import { AntDesign, Entypo, FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome5, FontAwesome6, Ionicons, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { AuthContext } from '../../context/AuthContext';
 
 import styles from "./home.styles";
@@ -542,21 +542,32 @@ function HomeScreen({
       {/* End of ScrollView */}
       {/* Fixed Bottom Tab Bar Container */}
       <SafeBottomAreaView edges={["bottom"]} style={styles.bottomBar}>
+         {/* About Tab */}
+        <TouchableOpacity style={styles.bottomTab} >
+          <Ionicons
+            name="home"
+            size={18}
+            style={[styles.tabIcon, styles.tabIconActive]}
+          />
+          <Text style={[styles.tabLabel, styles.activeTabLabel]}>Home</Text>
+        </TouchableOpacity>
+
         {/* About Tab */}
-        <TouchableOpacity style={styles.bottomTab} onPress={about}>
-          <Entypo name="list" size={18} />
+        <TouchableOpacity style={styles.bottomTab} onPress={about}> 
+        <Octicons name="info" size={18} style={styles.tabIcon}  />
+        
           <Text style={styles.tabLabel}>About</Text>
         </TouchableOpacity>
 
         {/* Profile Tab */}
-        <TouchableOpacity style={styles.bottomTab} onPress={profile}>
-          <FontAwesome6 name="user" size={18} />
+        <TouchableOpacity style={styles.bottomTab} onPress={profile}> 
+          <FontAwesome5 name="user" size={18} style={styles.tabIcon} />
           <Text style={styles.tabLabel}>Profile</Text>
         </TouchableOpacity>
 
         {/* Logout Tab */}
-        <TouchableOpacity style={styles.bottomTab} onPress={logoutEvent}>
-          <AntDesign name="logout" size={18} color="red" />
+        <TouchableOpacity style={styles.bottomTab} onPress={logoutEvent}> 
+          <MaterialIcons name="logout" size={18} color="red" style={[styles.tabIcon, styles.logoutTabIcon]} />
           <Text style={[styles.tabLabel, styles.logoutTabLabel]}>Logout</Text>
         </TouchableOpacity>
       </SafeBottomAreaView>

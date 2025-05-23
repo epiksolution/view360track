@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2", // A very subtle, clean background
+    backgroundColor: "#f6f7f8", // A very subtle, clean background
   },
   scrollViewContent: {
     paddingVertical: 16, // Vertical padding
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     // height: 80, // Fixed height for the bottom bar
     backgroundColor: "#ffffff", // White background
     borderTopWidth: 1, // Add a subtle top border
-    borderColor: "#e9ecef", // Light grey border color
+    borderColor: "#ffffff", // Light grey border color
     paddingHorizontal: 8, // Add some horizontal padding
-    paddingVertical: 8, // Add some vertical padding
+    paddingVertical: 4, // Add some vertical padding
     elevation: 0,
     shadowOpacity: 0,
   },
@@ -151,18 +151,41 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center icon/text horizontally
     justifyContent: "center", // Center icon/text vertically
     paddingVertical: 4, // Reduced padding slightly
+    width:"25%", // Set a fixed width for each tab
   },
   tabLabel: {
     // Style for the text labels
-    fontSize: 14, // Small font size for labels
+    fontSize: 15, // Small font size for labels
     color: "#6c757d", // Default text color (muted grey)
-    fontWeight: "500", // Medium font weight
-    marginTop: 4, // Space between icon and text
+    fontWeight: "600", // Medium font weight
+    marginTop: 1, // Space between icon and text
+  },
+  activeTabLabel: {
+    // Style for the active tab label
+    color: "#007bff", // Accent color (standard blue)
   },
   logoutTabLabel: {
     // Specific style for the logout label color
     color: "#dc3545", // Red color for logout text
   },
+  logoutTabIcon: {
+    // Specific style for the logout icon color
+    color: "#dc3545", // Red color for logout icon
+  },
+  tabIcon: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 4,
+    color: "#6c757d", // Default icon color (muted grey)
+  },
+  tabIconActive: {
+    backgroundColor: "#d8e7ff", // Active tab color
+    color: "#007bff", // White icon color when active
+    borderRadius: 20,
+   paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+
   // --- End of bottom bar styles ---
 });
 
